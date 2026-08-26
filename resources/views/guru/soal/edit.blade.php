@@ -27,19 +27,17 @@
             @enderror
         </div>
 
-        <!-- Kategori -->
+        <!-- Tingkat Kesulitan -->
         <div>
-            <label for="kategori_id" class="block text-gray-700 font-semibold mb-2">Tingkat Kesulitan</label>
-            <select id="kategori_id" name="kategori_id" required
+            <label for="difficulty_level" class="block text-gray-700 font-semibold mb-2">Tingkat Kesulitan</label>
+            <select id="difficulty_level" name="difficulty_level" required
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">-- Pilih Tingkat --</option>
-                @foreach ($kategori as $k)
-                    <option value="{{ $k->id }}" {{ $soal->kategori_id == $k->id ? 'selected' : '' }}>
-                        {{ ucfirst($k->nama_kategori) }}
-                    </option>
-                @endforeach
+                <option value="mudah" {{ $soal->difficulty_level == 'mudah' ? 'selected' : '' }}>🟢 Mudah</option>
+                <option value="normal" {{ $soal->difficulty_level == 'normal' ? 'selected' : '' }}>🟡 Normal</option>
+                <option value="sulit" {{ $soal->difficulty_level == 'sulit' ? 'selected' : '' }}>🔴 Sulit</option>
             </select>
-            @error('kategori_id')
+            @error('difficulty_level')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
             @enderror
         </div>

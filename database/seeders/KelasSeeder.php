@@ -10,7 +10,11 @@ class KelasSeeder extends Seeder
 {
     public function run(): void
     {
-        Kelas::create(['nama_kelas' => 'Kelas 1 SD']);
-        Kelas::create(['nama_kelas' => 'Kelas 2 SD']);
+        foreach (range(1, 6) as $nomorKelas) {
+            Kelas::updateOrCreate(
+                ['nama_kelas' => 'Kelas ' . $nomorKelas . ' SD'],
+                []
+            );
+        }
     }
 }

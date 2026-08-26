@@ -28,7 +28,7 @@
                                     {{ $s->kelas->nama_kelas }}
                                 </span>
                                 <span class="inline-block bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
-                                    {{ ucfirst($s->kategori->nama_kategori) }}
+                                    {{ ucfirst($s->kategori->nama_kategori ?? 'Tanpa kategori') }}
                                 </span>
                             </div>
                             
@@ -77,6 +77,10 @@
 
                         <!-- Actions -->
                         <div class="flex flex-col gap-2 md:ml-4 md:justify-start md:items-end md:self-start">
+                            <a href="{{ route('guru.quiz.start') }}" 
+                                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition text-sm text-center font-semibold">
+                                ▶ Jalankan
+                            </a>
                             <a href="{{ route('guru.soal.edit', $s) }}" 
                                 class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded transition text-sm text-center">
                                 Edit

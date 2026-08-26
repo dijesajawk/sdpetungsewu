@@ -15,18 +15,16 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         // Buat admin default
-        User::create([
+        User::updateOrCreate(['email' => 'admin@edukasi.local'], [
             'name' => 'Admin Edukasi',
-            'email' => 'admin@edukasi.local',
             'password' => Hash::make('password123'),
             'role' => 'admin',
             'status' => 'verified',
         ]);
 
         // Buat guru sample untuk testing
-        User::create([
+        User::updateOrCreate(['email' => 'guru@edukasi.local'], [
             'name' => 'Guru Test',
-            'email' => 'guru@edukasi.local',
             'password' => Hash::make('password123'),
             'role' => 'guru',
             'status' => 'pending',

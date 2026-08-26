@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Soal extends Model
 {
@@ -16,6 +17,7 @@ class Soal extends Model
         'user_id',
         'kelas_id',
         'kategori_id',
+        'difficulty_level',
         'pertanyaan',
         'pilihan_a',
         'pilihan_b',
@@ -47,4 +49,13 @@ class Soal extends Model
     {
         return $this->belongsTo(Kategori::class);
     }
+
+    /**
+     * Get jawaban dari soal ini
+     */
+    public function jawaban(): HasMany
+    {
+        return $this->hasMany(Jawaban::class);
+    }
 }
+

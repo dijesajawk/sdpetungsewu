@@ -12,38 +12,40 @@
         <div class="lg:col-span-1">
             <div class="bg-white rounded-lg shadow-lg p-4 sticky top-4">
                 <h3 class="font-semibold text-gray-800 mb-4">Gambar Asli</h3>
-                <img src="{{ $imageUrl }}" alt="Scanned" class="w-full border rounded-lg shadow">
-                <p class="text-xs text-gray-500 mt-4">Scroll ke bawah untuk melihat hasil parsing</p>
+                <div class="space-y-4" id="imagePreviewList"></div>
             </div>
         </div>
 
         <!-- Form & Processing -->
         <div class="lg:col-span-2">
-    <div id="loadingSpinner" class="bg-white rounded-lg shadow-lg p-8 text-center">
+            <!-- Loading -->
+            <div id="loadingSpinner" class="bg-white rounded-lg shadow-lg p-8 text-center">
                 <div class="inline-block">
                     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                 </div>
-                <p class="text-gray-700 mt-4 font-semibold">Memproses gambar dengan OCR...</p>
-                <p class="text-gray-600 text-sm mt-2">⏳ Ini mungkin memakan waktu 10-30 detik tergantung ukuran gambar</p>
-                <div id="progressBar" class="mt-4 w-full bg-gray-200 rounded-full h-2">
-                    <div id="progressFill" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+                <p id="statusText" class="text-gray-700 mt-4 font-semibold">Memulai OCR...</p>
+                <p class="text-gray-500 text-sm mt-1" id="statusDetail">Mempersiapkan worker OCR</p>
+                <div class="mt-4 w-full bg-gray-200 rounded-full h-3">
+                    <div id="progressFill" class="bg-blue-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
                 </div>
                 <p id="progressText" class="text-gray-600 text-xs mt-2">0%</p>
             </div>
 
+            <!-- Form -->
             <form id="scanForm" action="{{ route('guru.soal.scan.save', [], false) }}" method="POST" class="hidden space-y-6">
                 @csrf
 
-                <!-- Hidden Fields -->
-                <input type="hidden" name="imagePath" value="{{ $imagePath }}">
+                @if(isset($imagePaths))
+                    @foreach($imagePaths as $path)
+                        <input type="hidden" name="imagePaths[]" value="{{ $path }}">
+                    @endforeach
+                @endif
                 <input type="hidden" name="kelas_id" value="{{ $kelas_id }}">
-                <input type="hidden" name="kategori_id" value="{{ $kategori_id }}">
 
-                <!-- Questions Container -->
                 <div id="questionsContainer"></div>
 
-                <!-- Action Buttons -->
                 <div id="actionButtons" class="hidden bg-white rounded-lg shadow-lg p-6 space-y-4">
+                    <div id="questionSummary" class="text-center p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 font-semibold"></div>
                     <div class="flex gap-4">
                         <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition">
                             💾 Simpan Semua Soal
@@ -67,75 +69,114 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Debug: Raw Text -->
+            <div id="debugSection" class="hidden mt-4 bg-gray-50 border border-gray-300 rounded-lg p-4">
+                <button type="button" onclick="document.getElementById('debugText').classList.toggle('hidden')" class="text-sm text-blue-600 hover:text-blue-800 font-semibold">
+                    📄 Lihat Teks Hasil Ekstrak (Debug)
+                </button>
+                <pre id="debugText" class="hidden mt-2 bg-white p-3 rounded text-xs max-h-60 overflow-y-auto border text-gray-700"></pre>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Tesseract.js Script dengan Worker untuk performa lebih baik -->
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <script>
-    const imageUrl = '{{ $imageUrl }}';
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    const questionsContainer = document.getElementById('questionsContainer');
-    const scanForm = document.getElementById('scanForm');
-    const actionButtons = document.getElementById('actionButtons');
-    const errorMessage = document.getElementById('errorMessage');
+    const imageUrls = {!! json_encode($imageUrls ?? []) !!};
+    const imagePaths = {!! json_encode($imagePaths ?? []) !!};
 
-    // Start OCR processing dengan optimization
+    // Display image previews
+    const previewList = document.getElementById('imagePreviewList');
+    imageUrls.forEach((url, i) => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Scanned ' + (i+1);
+        img.className = 'w-full border rounded-lg shadow';
+        previewList.appendChild(img);
+    });
+
+    function updateProgress(pct, status, detail) {
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('progressText').textContent = pct + '%';
+        if (status) document.getElementById('statusText').textContent = status;
+        if (detail) document.getElementById('statusDetail').textContent = detail;
+    }
+
     async function processImage() {
         try {
-            // Resize dan compress image untuk OCR lebih cepat
-            const image = await loadImage(imageUrl);
-            const resizedImage = resizeImage(image, 1200);
+            updateProgress(5, 'Mempersiapkan OCR...', 'Memuat Tesseract.js worker');
 
-            // Perform OCR dengan language support yang lebih baik
-            const result = await Tesseract.recognize(
-                resizedImage,
-                'ind+eng', // Indonesian + English
-                {
-                    logger: m => {
-                        const progress = Math.round(m.progress * 100);
-                        console.log('OCR Progress:', progress + '%');
-                        document.getElementById('progressFill').style.width = progress + '%';
-                        document.getElementById('progressText').textContent = progress + '%';
+            const worker = await Tesseract.createWorker('eng', 1, {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        const pct = Math.round(m.progress * 100);
+                        updateProgress(40 + Math.round(pct * 0.55), 'Membaca teks dari gambar...', `Mengenali karakter: ${pct}%`);
+                    } else if (m.status === 'loading language traineddata') {
+                        const pct = Math.round(m.progress * 100);
+                        updateProgress(5 + Math.round(pct * 0.25), 'Mengunduh data bahasa...', `${pct}% selesai`);
+                    } else if (m.status === 'initializing api') {
+                        updateProgress(32, 'Inisialisasi OCR engine...', 'Hampir siap');
+                    } else if (m.status === 'loaded tesseract core') {
+                        updateProgress(8, 'Core OCR dimuat', 'Memuat data bahasa...');
+                    } else if (m.status === 'initialized tesseract') {
+                        updateProgress(10, 'OCR siap', 'Mengunduh data bahasa...');
                     }
                 }
-            );
+            });
 
-            const extractedText = result.data.text;
-            console.log('Extracted Text:', extractedText);
-            console.log('Confidence:', result.data.confidence);
+            let allText = '';
 
-            // Parse dengan multiple strategies
-            let questions = parseQuestionsV2(extractedText);
-            
-            // Jika parsing gagal, coba strategy alternatif
-            if (questions.length === 0) {
-                console.log('Trying alternative parsing...');
-                questions = parseQuestionsV3(extractedText);
+            for (let i = 0; i < imageUrls.length; i++) {
+                updateProgress(35 + Math.round((i / imageUrls.length) * 5), `Scan gambar ${i + 1} dari ${imageUrls.length}...`, 'Membaca teks');
+
+                const result = await worker.recognize(imageUrls[i]);
+                allText += '\n\n' + result.data.text;
+
+                console.log(`Image ${i+1} text:`, result.data.text);
+                console.log(`Image ${i+1} confidence:`, result.data.confidence);
             }
 
-            console.log('Parsed Questions:', questions);
+            await worker.terminate();
+
+            updateProgress(98, 'Memproses hasil...', 'Parsing soal');
+
+            console.log('=== ALL EXTRACTED TEXT ===');
+            console.log(allText);
+
+            document.getElementById('debugText').textContent = allText.trim();
+            document.getElementById('debugSection').classList.remove('hidden');
+
+            let questions = parseQuestions(allText);
 
             if (questions.length === 0) {
-                const debugText = extractedText.substring(0, 1000).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                showError(`Tidak ada soal yang terdeteksi. Coba:<br>
-• Scan ulang dengan foto yang lebih terang dan jelas<br>
-• Pastikan format: nomor, pertanyaan, A) B) C) D)<br>
-• Gunakan input manual jika format tidak standar<br><br>
-<details style="margin-top: 10px; text-align: left;">
-<summary style="cursor: pointer; color: #1e40af;">📄 Lihat Teks yang Diekstrak (Debug)</summary>
-<pre style="background: #f3f4f6; padding: 10px; border-radius: 5px; max-height: 300px; overflow-y: auto; font-size: 12px; margin-top: 10px;">${debugText}</pre>
-</details>`);
+                questions = parseQuestionsFallback(allText);
+            }
+
+            console.log('Parsed questions:', questions);
+
+            if (questions.length === 0) {
+                showError(`Tidak ada soal yang terdeteksi.<br><br>
+                    <strong>Kemungkinan penyebab:</strong><br>
+                    • Foto kurang jelas atau blur<br>
+                    • Format soal tidak sesuai<br>
+                    • Teks terlalu kecil<br><br>
+                    <strong>Format yang didukung:</strong><br>
+                    <code>1. Pertanyaan?<br>A) Jawaban A<br>B) Jawaban B<br>C) Jawaban C<br>D) Jawaban D</code><br><br>
+                    atau <code>A. Jawaban</code>, <code>A: Jawaban</code>`);
                 return;
             }
 
-            // Display the parsed questions
             displayQuestions(questions);
-            loadingSpinner.classList.add('hidden');
-            scanForm.classList.remove('hidden');
-            actionButtons.classList.remove('hidden');
+            updateProgress(100, 'Selesai!', `${questions.length} soal terdeteksi`);
+
+            setTimeout(() => {
+                document.getElementById('loadingSpinner').classList.add('hidden');
+                document.getElementById('scanForm').classList.remove('hidden');
+                document.getElementById('actionButtons').classList.remove('hidden');
+                document.getElementById('questionSummary').textContent = `✅ ${questions.length} soal berhasil dideteksi dari ${imageUrls.length} gambar`;
+            }, 500);
 
         } catch (error) {
             console.error('OCR Error:', error);
@@ -143,172 +184,85 @@
         }
     }
 
-    // Load image sebagai canvas
-    function loadImage(src) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = src;
-        });
-    }
-
-    // Resize image untuk performa OCR lebih baik
-    function resizeImage(img, maxWidth) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        const scale = maxWidth / img.width;
-        canvas.width = maxWidth;
-        canvas.height = img.height * scale;
-        
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        // Return JPEG dengan quality tinggi untuk OCR accuracy
-        return canvas.toDataURL('image/jpeg', 0.90);
-    }
-
-    // IMPROVED Parsing V2 - Lebih robust dan flexible
-    function parseQuestionsV2(text) {
+    // === MAIN PARSER ===
+    function parseQuestions(text) {
         const questions = [];
-        
-        // Clean text - normalize whitespace dan remove OCR artifacts
-        let cleanText = text
-            .replace(/l\s+1/gi, '1') // Fix OCR error: 'l 1' -> '1'
-            .replace(/O\s+0/gi, '0') // Fix OCR error: 'O 0' -> '0'
-            .replace(/[\u2013\u2014\u2015\–\—]/g, '-') // Normalize dashes
-            .replace(/[\u201C\u201D]/g, '"') // Normalize quotes
-            .trim();
 
-        const lines = cleanText.split('\n')
-            .map(line => line.replace(/^\s+|\s+$/g, '')) // Trim each line
-            .filter(line => line.length > 0); // Remove empty lines
+        let clean = text
+            .replace(/\r\n/g, '\n')
+            .replace(/\r/g, '\n')
+            .replace(/\t/g, ' ')
+            .replace(/\u2013|\u2014|\u2015/g, '-')
+            .replace(/\u201C|\u201D/g, '"')
+            .replace(/\u2018|\u2019/g, "'");
 
-        let i = 0;
-        while (i < lines.length) {
-            const line = lines[i];
+        const lines = clean.split('\n')
+            .map(l => l.replace(/\s+$/, ''))
+            .filter(l => l.trim().length > 0);
 
-            // Deteksi pertanyaan (bisa dengan nomor atau langsung)
-            if (isLikelyQuestion(line, i, lines)) {
-                let questionText = line.replace(/^\d+[\.\)\-\:\s]+/, '').trim(); // Remove number prefix
-                
-                if (!questionText) {
-                    i++;
-                    continue;
-                }
-
-                // Kumpulkan pilihan A, B, C, D
-                const choices = {};
-                let j = i + 1;
-                let foundChoices = 0;
-
-                while (j < lines.length && foundChoices < 4) {
-                    const choiceLine = lines[j];
-
-                    if (isChoice(choiceLine)) {
-                        const [letter, text] = extractChoice(choiceLine);
-                        if (text && text.length > 0) {
-                            choices[letter.toLowerCase()] = text;
-                            foundChoices++;
-                            j++;
-                        } else {
-                            j++;
-                        }
-                    } else if (foundChoices > 0 && foundChoices < 4) {
-                        // Continuation of previous choice (multi-line)
-                        if (choices[Object.keys(choices)[Object.keys(choices).length - 1]] && !isLikelyQuestion(choiceLine, j, lines)) {
-                            const lastLetter = Object.keys(choices)[Object.keys(choices).length - 1];
-                            choices[lastLetter] += ' ' + choiceLine;
-                            j++;
-                        } else {
-                            break;
-                        }
-                    } else if (isLikelyQuestion(choiceLine, j, lines)) {
-                        break; // Next question found
-                    } else {
-                        j++;
-                    }
-                }
-
-                // Validasi: harus punya 4 pilihan yang valid
-                if (foundChoices === 4 && 
-                    choices['a'] && choices['a'].length > 0 &&
-                    choices['b'] && choices['b'].length > 0 &&
-                    choices['c'] && choices['c'].length > 0 &&
-                    choices['d'] && choices['d'].length > 0) {
-                    
-                    questions.push({
-                        pertanyaan: questionText.substring(0, 200), // Limit question length
-                        pilihan_a: choices['a'].substring(0, 150),
-                        pilihan_b: choices['b'].substring(0, 150),
-                        pilihan_c: choices['c'].substring(0, 150),
-                        pilihan_d: choices['d'].substring(0, 150),
-                        jawaban_benar: 'a' // Default, user akan set manually
-                    });
-
-                    i = j; // Continue from where we left choices
-                } else {
-                    i++;
-                }
-            } else {
-                i++;
+        // Step 1: Find all question start lines
+        const qStarts = [];
+        for (let i = 0; i < lines.length; i++) {
+            const l = lines[i].trim();
+            // Match: "1." "1)" "1:" "(1)" "1 " followed by non-choice text
+            if (/^\d{1,3}[\.\)\:\s]/.test(l) && !isChoiceLine(l)) {
+                qStarts.push(i);
             }
         }
 
-        return questions;
-    }
+        // Step 2: For each question, extract text + choices
+        for (let qi = 0; qi < qStarts.length; qi++) {
+            const startLine = qStarts[qi];
+            const endLine = (qi + 1 < qStarts.length) ? qStarts[qi + 1] : lines.length;
 
-    // ALTERNATIVE Parsing V3 - Gunakan regex grouping
-    function parseQuestionsV3(text) {
-        const questions = [];
-        
-        // Pattern untuk match: nomor/bullet, pertanyaan, dan 4 pilihan
-        const questionPattern = /(?:^|\n)([\d*\-•]+[\.\)\:]?|^|\n)\s*([^a-d\n]*[^a-d\n\.\)])\n([a-d]\)\s*[^\n]+\n){3}[a-d]\)\s*[^\n]+/gmi;
-        const choicePattern = /([a-d])\)\s*([^\n]+)/gi;
-
-        // Split by question number or bullet
-        const parts = text.split(/\n(?=\d+[\.\)\:]?\s|^[a-d]\))/);
-
-        for (let part of parts) {
-            const lines = part.split('\n').map(l => l.trim()).filter(l => l);
-            
-            if (lines.length < 5) continue; // Minimal: question + 4 choices
-
-            // Cari pertanyaan (baris pertama yang bukan choice)
+            const block = lines.slice(startLine, endLine);
             let questionText = '';
-            let choicesStart = 0;
+            let choiceLines = [];
+            let foundFirstChoice = false;
 
-            for (let j = 0; j < lines.length; j++) {
-                if (!isChoice(lines[j])) {
-                    questionText = lines[j].replace(/^\d+[\.\)\-\:]?\s*/, '');
-                    choicesStart = j + 1;
+            for (let j = 0; j < block.length; j++) {
+                const bl = block[j].trim();
+
+                if (!foundFirstChoice) {
+                    if (isChoiceLine(bl)) {
+                        foundFirstChoice = true;
+                        choiceLines.push(bl);
+                    } else {
+                        // Remove question number prefix
+                        let qText = bl.replace(/^\d{1,3}[\.\)\:\s]+/, '').trim();
+                        if (qText.length > 0) {
+                            if (questionText.length > 0) questionText += ' ';
+                            questionText += qText;
+                        }
+                    }
                 } else {
-                    break;
+                    if (isChoiceLine(bl)) {
+                        choiceLines.push(bl);
+                    } else if (choiceLines.length > 0) {
+                        // Append to last choice (multi-line)
+                        choiceLines[choiceLines.length - 1] += ' ' + bl;
+                    }
                 }
             }
 
-            if (!questionText) continue;
-
-            // Kumpulkan pilihan dari sisa lines
+            // Parse choices
             const choices = {};
-            for (let j = choicesStart; j < lines.length; j++) {
-                if (isChoice(lines[j])) {
-                    const [letter, text] = extractChoice(lines[j]);
-                    choices[letter.toLowerCase()] = text;
+            for (const cl of choiceLines) {
+                const parsed = parseChoiceLine(cl);
+                if (parsed) {
+                    choices[parsed.letter] = parsed.text;
                 }
             }
 
-            if (Object.keys(choices).length === 4) {
+            // Validate: need question text + at least 2 choices
+            if (questionText.length >= 5 && Object.keys(choices).length >= 2) {
                 questions.push({
-                    pertanyaan: questionText,
-                    pilihan_a: choices['a'] || '',
-                    pilihan_b: choices['b'] || '',
-                    pilihan_c: choices['c'] || '',
-                    pilihan_d: choices['d'] || '',
-                    jawaban_benar: 'a' // Default
+                    pertanyaan: questionText.substring(0, 500),
+                    pilihan_a: (choices['a'] || '').substring(0, 200),
+                    pilihan_b: (choices['b'] || '').substring(0, 200),
+                    pilihan_c: (choices['c'] || '').substring(0, 200),
+                    pilihan_d: (choices['d'] || '').substring(0, 200),
+                    jawaban_benar: 'a'
                 });
             }
         }
@@ -316,139 +270,140 @@
         return questions;
     }
 
-    // Helper: Cek apakah line adalah pilihan (A, B, C, atau D)
-    function isChoice(line) {
-        // Pattern: A) text atau A. text atau A: text atau A] text
-        if (/^[a-d][\):\.\]\s]/i.test(line)) return true;
-        // Pattern: A text (dengan spasi)
-        if (/^[a-d]\s+[A-Za-z0-9]/i.test(line)) return true;
+    // === FALLBACK PARSER: more aggressive ===
+    function parseQuestionsFallback(text) {
+        const questions = [];
+        const blocks = text.split(/\n\s*\n/);
+
+        for (const block of blocks) {
+            const lines = block.split('\n').map(l => l.trim()).filter(l => l);
+            if (lines.length < 2) continue;
+
+            let qText = '';
+            const choices = {};
+
+            for (const line of lines) {
+                if (isChoiceLine(line)) {
+                    const p = parseChoiceLine(line);
+                    if (p) choices[p.letter] = p.text;
+                } else if (qText.length === 0) {
+                    qText = line.replace(/^\d{1,3}[\.\)\:\s]+/, '').trim();
+                }
+            }
+
+            if (qText.length >= 5 && Object.keys(choices).length >= 2) {
+                questions.push({
+                    pertanyaan: qText.substring(0, 500),
+                    pilihan_a: (choices['a'] || '').substring(0, 200),
+                    pilihan_b: (choices['b'] || '').substring(0, 200),
+                    pilihan_c: (choices['c'] || '').substring(0, 200),
+                    pilihan_d: (choices['d'] || '').substring(0, 200),
+                    jawaban_benar: 'a'
+                });
+            }
+        }
+
+        return questions;
+    }
+
+    function isChoiceLine(line) {
+        const l = line.trim();
+        // A) A. A: A] (A)
+        if (/^[a-d][\)\.\:\]\s]/i.test(l)) return true;
+        if (/^\([a-d]\)/i.test(l)) return true;
+        // "a " or "a," at start (lowercase, only if followed by text)
+        if (/^[a-d][\s,]+[A-Za-z0-9]/i.test(l) && l.length > 3) return true;
         return false;
     }
 
-    // Helper: Extract pilihan dari line
-    function extractChoice(line) {
-        // Try patterns: A) text, A. text, A: text, A] text, A text
+    function parseChoiceLine(line) {
+        const l = line.trim();
         const patterns = [
-            /^([a-d])\)\s*(.+)/i,
-            /^([a-d]]\s*(.+)/i,
-            /^([a-d]:\s*(.+)/i,
-            /^([a-d]\.\s*(.+)/i,
-            /^([a-d]\s+(.+)/i
+            /^\(?([a-d])\)?[\)\.\:\]\s]+(.+)/i,
+            /^([a-d])\s{2,}(.+)/i,
+            /^([a-d])[\s,]+(.+)/i,
         ];
 
-        for (let pattern of patterns) {
-            const match = line.match(pattern);
-            if (match && match[2]) {
-                return [match[1], match[2].trim()];
+        for (const pat of patterns) {
+            const m = l.match(pat);
+            if (m && m[2] && m[2].trim().length > 0) {
+                return { letter: m[1].toLowerCase(), text: m[2].trim() };
             }
         }
-        
-        return ['a', line];
+        return null;
     }
 
-    // Helper: Cek apakah line kemungkinan adalah pertanyaan
-    function isLikelyQuestion(line, index, lines) {
-        // Punya nomor di depan: 1. atau 1) atau 1-
-        if (/^\d+[\.\)\-\:\s]/.test(line)) return true;
-        
-        // Panjang lumayan dan tidak ada choice marker
-        if (line.length > 15 && !isChoice(line)) {
-            // Check if next line is a choice
-            if (index + 1 < lines.length && isChoice(lines[index + 1])) {
-                return true;
-            }
-            // Or if it ends with question mark
-            if (line.endsWith('?')) return true;
-        }
-
-        return false;
-    }
-
-    // Helper: Deteksi jawaban benar (jika ditandai dengan asterisk atau bold)
-    function detectAnswer(questionText, choices, lines) {
-        // Default ke A jika tidak ketemu
-        return 'a';
-    }
-
-    // Display parsed questions in editable form
     function displayQuestions(questions) {
-        questionsContainer.innerHTML = '';
-        
-        questions.forEach((q, index) => {
-            const questionDiv = document.createElement('div');
-            questionDiv.className = 'bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500';
-            
-            questionDiv.innerHTML = `
+        const container = document.getElementById('questionsContainer');
+        container.innerHTML = '';
+
+        questions.forEach((q, i) => {
+            const div = document.createElement('div');
+            div.className = 'bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500';
+            div.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full">Soal #${i + 1}</span>
+                    <button type="button" onclick="this.closest('.bg-white').remove()" class="text-red-500 hover:text-red-700 text-sm font-semibold">✕ Hapus</button>
+                </div>
                 <div class="mb-4">
-                    <label class="block text-gray-700 font-semibold mb-2">Pertanyaan #${index + 1}</label>
-                    <textarea name="questions[${index}][pertanyaan]" required rows="3"
+                    <label class="block text-gray-700 font-semibold mb-2">Pertanyaan</label>
+                    <textarea name="questions[${i}][pertanyaan]" required rows="3"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Edit pertanyaan di sini...">${escapeHtml(q.pertanyaan)}</textarea>
+                        placeholder="Edit pertanyaan...">${escapeHtml(q.pertanyaan)}</textarea>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                     <div>
-                        <label class="block text-gray-700 font-semibold mb-2">Pilihan A</label>
-                        <input type="text" name="questions[${index}][pilihan_a]" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value="${escapeHtml(q.pilihan_a)}" placeholder="Pilihan A">
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Pilihan A</label>
+                        <input type="text" name="questions[${i}][pilihan_a]" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                            value="${escapeHtml(q.pilihan_a)}">
                     </div>
                     <div>
-                        <label class="block text-gray-700 font-semibold mb-2">Pilihan B</label>
-                        <input type="text" name="questions[${index}][pilihan_b]" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value="${escapeHtml(q.pilihan_b)}" placeholder="Pilihan B">
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Pilihan B</label>
+                        <input type="text" name="questions[${i}][pilihan_b]" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                            value="${escapeHtml(q.pilihan_b)}">
                     </div>
                     <div>
-                        <label class="block text-gray-700 font-semibold mb-2">Pilihan C</label>
-                        <input type="text" name="questions[${index}][pilihan_c]" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value="${escapeHtml(q.pilihan_c)}" placeholder="Pilihan C">
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Pilihan C</label>
+                        <input type="text" name="questions[${i}][pilihan_c]"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                            value="${escapeHtml(q.pilihan_c)}" placeholder="(opsional)">
                     </div>
                     <div>
-                        <label class="block text-gray-700 font-semibold mb-2">Pilihan D</label>
-                        <input type="text" name="questions[${index}][pilihan_d]" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value="${escapeHtml(q.pilihan_d)}" placeholder="Pilihan D">
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Pilihan D</label>
+                        <input type="text" name="questions[${i}][pilihan_d]"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                            value="${escapeHtml(q.pilihan_d)}" placeholder="(opsional)">
                     </div>
                 </div>
-
                 <div>
-                    <label class="block text-gray-700 font-semibold mb-2">Jawaban Benar</label>
-                    <select name="questions[${index}][jawaban_benar]" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="a" ${q.jawaban_benar === 'a' ? 'selected' : ''}>A</option>
-                        <option value="b" ${q.jawaban_benar === 'b' ? 'selected' : ''}>B</option>
-                        <option value="c" ${q.jawaban_benar === 'c' ? 'selected' : ''}>C</option>
-                        <option value="d" ${q.jawaban_benar === 'd' ? 'selected' : ''}>D</option>
+                    <label class="block text-gray-700 font-semibold mb-1 text-sm">Jawaban Benar</label>
+                    <select name="questions[${i}][jawaban_benar]" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                        <option value="a">A</option>
+                        <option value="b">B</option>
+                        <option value="c">C</option>
+                        <option value="d">D</option>
                     </select>
                 </div>
-
-                <div class="mt-4 p-3 bg-blue-50 rounded border border-blue-200 text-sm text-gray-600">
-                    <strong>💡 Tips:</strong> Periksa kembali teks yang diekstrak. OCR mungkin salah membaca beberapa karakter.
-                </div>
             `;
-            
-            questionsContainer.appendChild(questionDiv);
+            container.appendChild(div);
         });
     }
 
-    // Show error message
     function showError(message) {
-        loadingSpinner.classList.add('hidden');
-        const errorText = document.getElementById('errorText');
-        errorText.innerHTML = `<strong>❌ Error:</strong><br>${message}`;
-        errorMessage.classList.remove('hidden');
+        document.getElementById('loadingSpinner').classList.add('hidden');
+        document.getElementById('errorText').innerHTML = `<strong>Error:</strong><br>${message}`;
+        document.getElementById('errorMessage').classList.remove('hidden');
     }
 
-    // Escape HTML to prevent XSS
     function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+        const d = document.createElement('div');
+        d.textContent = text || '';
+        return d.innerHTML;
     }
 
-    // Start processing when page loads
     window.addEventListener('load', processImage);
 </script>
 @endsection

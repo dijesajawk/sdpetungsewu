@@ -13,7 +13,10 @@ class AdminController extends Controller
     public function dashboard()
     {
         $guruPending = User::where('role', 'guru')
-                           ->where('status', 'pending')
+                           ->where(function ($query) {
+                               $query->where('status', 'pending')
+                                     ->orWhereNull('status');
+                           })
                            ->get();
         
         $guruVerified = User::where('role', 'guru')

@@ -28,7 +28,7 @@ class AuthController extends Controller
             'password' => 'required|min:6',
         ]);
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt([...$credentials, 'status' => 'verified'])) {
             // Cek apakah user sudah verified
             $user = Auth::user();
             
@@ -95,6 +95,10 @@ class AuthController extends Controller
         
         if ($user->role === 'admin') {
             return '/admin/dashboard';
+        }
+        
+        if ($user->role === 'student') {
+            return '/student/dashboard';
         }
         
         return '/guru/dashboard';

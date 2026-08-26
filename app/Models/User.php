@@ -38,4 +38,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Soal::class);
     }
+
+    /**
+     * Get jawaban yang dibuat oleh siswa ini
+     */
+    public function jawaban(): HasMany
+    {
+        return $this->hasMany(Jawaban::class);
+    }
 }
