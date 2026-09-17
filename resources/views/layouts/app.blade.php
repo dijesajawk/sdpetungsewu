@@ -171,7 +171,7 @@
 
             function showToast(message, type = 'success') {
                 if (!toast || !inner) return;
-                text.textContent = message;
+                text.innerHTML = message;
                 inner.classList.remove('success', 'error');
                 inner.classList.add(type);
                 icon.textContent = type === 'success' ? '✓' : '!';

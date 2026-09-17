@@ -18,8 +18,29 @@ echo -e "${CYAN}========================================${NC}"
 echo ""
 
 # --- Konfigurasi ---
-DEPLOY_DIR="$HOME/public_html"
+# Deteksi path otomatis untuk Hostinger shared hosting
+if [ -d "$HOME/domains/mediumblue-dragonfly-690355.hostingersite.com/public_html" ]; then
+    DEPLOY_DIR="$HOME/domains/mediumblue-dragonfly-690355.hostingersite.com/public_html"
+elif [ -d "$HOME/public_html" ]; then
+    DEPLOY_DIR="$HOME/public_html"
+else
+    DEPLOY_DIR="$(pwd)"
+fi
 LOG_FILE="$HOME/deploy.log"
+
+# --- Fix PHP version untuk Hostinger shared hosting ---
+# SSH mungkin pakai PHP versi lama, hPanel pakai versi baru
+if [ -d "/opt/alt/php83/usr/bin" ]; then
+    export PATH="/opt/alt/php83/usr/bin:$PATH"
+    echo -e "${GREEN}      PHP PATH fixed: /opt/alt/php83/usr/bin${NC}"
+fi
+
+# Coba composer2 jika composer tidak ada atau versi lama
+if ! command -v composer &> /dev/null; then
+    if command -v composer2 &> /dev/null; then
+        alias composer=composer2
+    fi
+fi
 
 # --- Fungsi helper ---
 log() {
@@ -85,6 +106,12 @@ else
     fi
 fi
 
+# --- STEP 5.5: Pastikan folder storage ada ---
+log "${YELLOW}[5.5/8] Cek folder storage...${NC}"
+mkdir -p storage/framework/cache/data storage/framework/sessions \
+    storage/framework/testing storage/framework/views storage/logs
+log "${GREEN}      OK${NC}"
+
 # --- STEP 6: Set permissions ---
 log "${YELLOW}[6/8] Set permissions...${NC}"
 if [ -d "storage" ]; then
@@ -109,12 +136,16 @@ fi
 
 # --- STEP 7: Jalankan migration ---
 log "${YELLOW}[7/8] Jalankan migration...${NC}"
-read -p "      Jalankan migration? (y/n): " RUN_MIGRATE
-if [ "$RUN_MIGRATE" = "y" ] || [ "$RUN_MIGRATE" = "Y" ]; then
+# Auto-detect: jalankan migrate jika ini pertama kali (belum ada table users)
+TABLE_EXISTS=$(php artisan migrate:status 2>/dev/null | grep -c "users" || echo "0")
+if [ "$TABLE_EXISTS" = "0" ]; then
+    log "${YELLOW}      Menjalankan migration pertama kali...${NC}"
     php artisan migrate --force 2>&1 | tee -a "$LOG_FILE"
     log "${GREEN}      OK${NC}"
 else
-    log "${YELLOW}      SKIP: Migration dilewati${NC}"
+    log "${YELLOW}      Migration sudah dijalankan, cek update...${NC}"
+    php artisan migrate --force 2>&1 | tee -a "$LOG_FILE"
+    log "${GREEN}      OK${NC}"
 fi
 
 # --- STEP 8: Clear cache & optimize ---

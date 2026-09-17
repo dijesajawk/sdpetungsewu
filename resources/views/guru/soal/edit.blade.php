@@ -27,6 +27,23 @@
             @enderror
         </div>
 
+        <!-- Mata Pelajaran -->
+        <div>
+            <label for="mata_pelajaran" class="block text-gray-700 font-semibold mb-2">Mata Pelajaran</label>
+            <select id="mata_pelajaran" name="mata_pelajaran" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">-- Pilih Mata Pelajaran --</option>
+                @foreach ($mataPelajaran as $mapel)
+                    <option value="{{ $mapel }}" {{ $soal->mata_pelajaran == $mapel ? 'selected' : '' }}>
+                        {{ $mapel }}
+                    </option>
+                @endforeach
+            </select>
+            @error('mata_pelajaran')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
+        </div>
+
         <!-- Tingkat Kesulitan -->
         <div>
             <label for="difficulty_level" class="block text-gray-700 font-semibold mb-2">Tingkat Kesulitan</label>

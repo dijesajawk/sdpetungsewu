@@ -6,9 +6,14 @@
 <div class="max-w-2xl mx-auto">
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold text-gray-800">Buat Soal Baru</h1>
-        <a href="{{ route('guru.soal.scan.upload') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition text-sm">
-            📸 Scan Soal Otomatis
-        </a>
+        <div class="flex gap-2">
+            <a href="{{ route('guru.soal.scan.upload') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition text-sm">
+                📸 Scan Soal
+            </a>
+            <a href="{{ route('guru.soal.upload.file') }}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition text-sm">
+                📄 Upload PDF/Word
+            </a>
+        </div>
     </div>
 
     <form action="{{ route('guru.soal.store', [], false) }}" method="POST" class="bg-white rounded-lg shadow-lg p-8 space-y-6">
@@ -27,6 +32,23 @@
                 @endforeach
             </select>
             @error('kelas_id')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
+        </div>
+
+        <!-- Mata Pelajaran -->
+        <div>
+            <label for="mata_pelajaran" class="block text-gray-700 font-semibold mb-2">Mata Pelajaran</label>
+            <select id="mata_pelajaran" name="mata_pelajaran" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">-- Pilih Mata Pelajaran --</option>
+                @foreach ($mataPelajaran as $mapel)
+                    <option value="{{ $mapel }}" {{ old('mata_pelajaran') == $mapel ? 'selected' : '' }}>
+                        {{ $mapel }}
+                    </option>
+                @endforeach
+            </select>
+            @error('mata_pelajaran')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
             @enderror
         </div>

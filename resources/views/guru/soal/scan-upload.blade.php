@@ -47,6 +47,21 @@
             @enderror
         </div>
 
+        <!-- Mata Pelajaran -->
+        <div>
+            <label for="mata_pelajaran" class="block text-gray-700 font-semibold mb-2">Mata Pelajaran</label>
+            <select id="mata_pelajaran" name="mata_pelajaran" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">-- Pilih Mata Pelajaran --</option>
+                @foreach (['Agama', 'PPKn', 'Bahasa Indonesia', 'Matematika', 'IPA', 'IPS', 'PJOK', 'Seni Budaya', 'Bahasa Inggris'] as $mapel)
+                    <option value="{{ $mapel }}">{{ $mapel }}</option>
+                @endforeach
+            </select>
+            @error('mata_pelajaran')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
+        </div>
+
         <!-- Tips -->
         <div class="bg-blue-100 border border-blue-400 rounded-lg p-4 space-y-3">
             <p class="text-blue-800 text-sm font-semibold">💡 Tips untuk Hasil Terbaik:</p>

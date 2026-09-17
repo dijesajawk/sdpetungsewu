@@ -56,6 +56,12 @@ Route::prefix('guru')->middleware(['auth', 'guru'])->group(function () {
     Route::post('/soal/scan/process', [GuruController::class, 'processScanImage'])->name('guru.soal.scan.process');
     Route::get('/soal/scan/review', [GuruController::class, 'showScanReview'])->name('guru.soal.scan.review');
     Route::post('/soal/scan/save', [GuruController::class, 'saveScanResult'])->name('guru.soal.scan.save');
+    
+    // Upload File Routes (PDF/Word)
+    Route::get('/soal/upload/file', [GuruController::class, 'showUploadFile'])->name('guru.soal.upload.file');
+    Route::post('/soal/upload/process', [GuruController::class, 'processUploadFile'])->name('guru.soal.upload.process');
+    Route::get('/soal/upload/review', [GuruController::class, 'showUploadReview'])->name('guru.soal.upload.review');
+    Route::post('/soal/upload/save', [GuruController::class, 'saveUploadResult'])->name('guru.soal.upload.save');
 });
 
 // Public Quiz Routes (Murid tanpa login)

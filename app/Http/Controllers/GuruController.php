@@ -41,13 +41,32 @@ class GuruController extends Controller
     }
 
     /**
+     * Daftar mata pelajaran yang tersedia
+     */
+    private static function getMataPelajaranOptions(): array
+    {
+        return [
+            'Agama',
+            'PPKn',
+            'Bahasa Indonesia',
+            'Matematika',
+            'IPA',
+            'IPS',
+            'PJOK',
+            'Seni Budaya',
+            'Bahasa Inggris',
+        ];
+    }
+
+    /**
      * Tampilkan form buat soal
      */
     public function createSoal()
     {
         $kelas = Kelas::all();
+        $mataPelajaran = self::getMataPelajaranOptions();
 
-        return view('guru.soal.create', compact('kelas'));
+        return view('guru.soal.create', compact('kelas', 'mataPelajaran'));
     }
 
     /**
@@ -58,6 +77,7 @@ class GuruController extends Controller
         $validated = $request->validate([
             'kelas_id' => 'required|exists:kelas,id',
             'difficulty_level' => 'required|in:mudah,normal,sulit',
+            'mata_pelajaran' => 'required|string|in:' . implode(',', self::getMataPelajaranOptions()),
             'pertanyaan' => 'required|string|min:10',
             'pilihan_a' => 'required|string',
             'pilihan_b' => 'required|string',
@@ -71,6 +91,7 @@ class GuruController extends Controller
             'kelas_id' => $validated['kelas_id'],
             'kategori_id' => null,
             'difficulty_level' => $validated['difficulty_level'],
+            'mata_pelajaran' => $validated['mata_pelajaran'],
             'pertanyaan' => $validated['pertanyaan'],
             'pilihan_a' => $validated['pilihan_a'],
             'pilihan_b' => $validated['pilihan_b'],
@@ -83,15 +104,37 @@ class GuruController extends Controller
     }
 
     /**
-     * Tampilkan daftar soal guru
+     * Tampilkan daftar soal guru dengan filter
      */
-    public function listSoal()
+    public function listSoal(Request $request)
     {
-        $soal = Soal::where('user_id', Auth::id())
-                    ->with(['kelas', 'kategori'])
-                    ->paginate(10);
+        $query = Soal::where('user_id', Auth::id())
+                    ->with(['kelas', 'kategori']);
+
+        // Filter by mata_pelajaran
+        $mataPelajaranFilter = $request->input('mata_pelajaran');
+        if ($mataPelajaranFilter && $mataPelajaranFilter !== 'all') {
+            $query->where('mata_pelajaran', $mataPelajaranFilter);
+        }
+
+        // Filter by difficulty_level
+        $difficultyFilter = $request->input('difficulty_level');
+        if ($difficultyFilter && $difficultyFilter !== 'all') {
+            $query->where('difficulty_level', $difficultyFilter);
+        }
+
+        // Filter by kelas
+        $kelasFilter = $request->input('kelas_id');
+        if ($kelasFilter && $kelasFilter !== 'all') {
+            $query->where('kelas_id', $kelasFilter);
+        }
+
+        $soal = $query->paginate(10)->withQueryString();
+
+        $mataPelajaran = self::getMataPelajaranOptions();
+        $kelas = Kelas::all();
         
-        return view('guru.soal.list', compact('soal'));
+        return view('guru.soal.list', compact('soal', 'mataPelajaran', 'kelas'));
     }
 
     /**
@@ -105,8 +148,9 @@ class GuruController extends Controller
         }
 
         $kelas = Kelas::all();
+        $mataPelajaran = self::getMataPelajaranOptions();
 
-        return view('guru.soal.edit', compact('soal', 'kelas'));
+        return view('guru.soal.edit', compact('soal', 'kelas', 'mataPelajaran'));
     }
 
     /**
@@ -122,6 +166,7 @@ class GuruController extends Controller
         $validated = $request->validate([
             'kelas_id' => 'required|exists:kelas,id',
             'difficulty_level' => 'required|in:mudah,normal,sulit',
+            'mata_pelajaran' => 'required|string|in:' . implode(',', self::getMataPelajaranOptions()),
             'pertanyaan' => 'required|string|min:10',
             'pilihan_a' => 'required|string',
             'pilihan_b' => 'required|string',
@@ -535,6 +580,7 @@ class GuruController extends Controller
                 'user_id' => Auth::id(),
                 'kelas_id' => $validated['kelas_id'],
                 'difficulty_level' => 'normal',
+                'mata_pelajaran' => $question['mata_pelajaran'] ?? null,
                 'pertanyaan' => $question['pertanyaan'],
                 'pilihan_a' => $question['pilihan_a'],
                 'pilihan_b' => $question['pilihan_b'],
@@ -553,5 +599,261 @@ class GuruController extends Controller
         }
 
         return redirect('/guru/soal')->with('success', "$saved_count soal berhasil ditambahkan dari scan!");
+    }
+
+    /**
+     * Tampilkan halaman upload file PDF/Word
+     */
+    public function showUploadFile()
+    {
+        $kelas = Kelas::all();
+        $mataPelajaran = self::getMataPelajaranOptions();
+
+        return view('guru.soal.upload-file', compact('kelas', 'mataPelajaran'));
+    }
+
+    /**
+     * Proses file PDF/Word dan ekstrak teks soal (mendukung multiple file)
+     */
+    public function processUploadFile(Request $request)
+    {
+        $request->validate([
+            'files' => 'required|array|min:1|max:20',
+            'files.*' => 'required|file|mimes:pdf,doc,docx|max:10240',
+            'kelas_id' => 'required|exists:kelas,id',
+            'mata_pelajaran' => 'required|string|in:' . implode(',', self::getMataPelajaranOptions()),
+        ]);
+
+        $allText = '';
+        $fileNames = [];
+        $failedFiles = [];
+
+        foreach ($request->file('files') as $file) {
+            $extension = strtolower($file->getClientOriginalExtension());
+            $text = '';
+
+            if ($extension === 'pdf') {
+                $text = $this->extractTextFromPdf($file);
+            } elseif (in_array($extension, ['doc', 'docx'])) {
+                $text = $this->extractTextFromWord($file);
+            }
+
+            if (!empty(trim($text))) {
+                $allText .= "\n\n" . str_repeat('=', 60) . "\n";
+                $allText .= "FILE: " . $file->getClientOriginalName() . "\n";
+                $allText .= str_repeat('=', 60) . "\n\n";
+                $allText .= $text;
+                $fileNames[] = $file->getClientOriginalName();
+            } else {
+                $failedFiles[] = $file->getClientOriginalName();
+            }
+        }
+
+        $allText = trim($allText);
+
+        if (empty($allText)) {
+            $errorMsg = '<strong>Tidak dapat mengekstrak teks dari file yang dipilih.</strong>';
+            if (!empty($failedFiles)) {
+                $errorMsg .= '<br><br><strong>File yang gagal diproses:</strong><br>' . implode('<br>', array_map(fn($f) => '• ' . $f, $failedFiles));
+            }
+            $errorMsg .= '<br><br><strong>Kemungkinan penyebab:</strong>';
+            $errorMsg .= '<br>• File PDF berisi scan/gambar (bukan teks)';
+            $errorMsg .= '<br>• File terenkripsi atau terproteksi';
+            $errorMsg .= '<br>• Format file tidak didukung';
+            $errorMsg .= '<br><br>💡 <strong>Solusi:</strong> Untuk file scan/gambar, gunakan fitur <strong>Scan Soal</strong> yang mendukung OCR.';
+            return back()->with('error', $errorMsg);
+        }
+
+        $displayName = count($fileNames) > 1
+            ? count($fileNames) . ' file (' . implode(', ', array_slice($fileNames, 0, 3)) . (count($fileNames) > 3 ? ', ...' : '') . ')'
+            : $fileNames[0];
+
+        // Simpan text sementara di session untuk review
+        $sessionKey = 'upload_file_review_' . Auth::id();
+        session([$sessionKey => [
+            'text' => $allText,
+            'kelas_id' => $request->kelas_id,
+            'mata_pelajaran' => $request->mata_pelajaran,
+            'file_name' => $displayName,
+        ]]);
+
+        return redirect()->route('guru.soal.upload.review');
+    }
+
+    /**
+     * Tampilkan halaman review hasil ekstraksi file
+     */
+    public function showUploadReview()
+    {
+        $sessionKey = 'upload_file_review_' . Auth::id();
+        $data = session($sessionKey);
+
+        if (empty($data)) {
+            return redirect()->route('guru.soal.upload.file')->with('error', 'Tidak ada file yang diupload. Silakan upload file terlebih dahulu.');
+        }
+
+        $kelas = Kelas::all();
+        $mataPelajaran = self::getMataPelajaranOptions();
+
+        return view('guru.soal.upload-review', [
+            'extractedText' => $data['text'],
+            'kelas_id' => $data['kelas_id'],
+            'mata_pelajaran' => $data['mata_pelajaran'],
+            'file_name' => $data['file_name'],
+            'kelas' => $kelas,
+            'mataPelajaran' => $mataPelajaran,
+        ]);
+    }
+
+    /**
+     * Simpan soal dari hasil upload file (review)
+     */
+    public function saveUploadResult(Request $request)
+    {
+        $validated = $request->validate([
+            'questions' => 'required|array|min:1',
+            'questions.*.pertanyaan' => 'required|string|min:5',
+            'questions.*.pilihan_a' => 'required|string',
+            'questions.*.pilihan_b' => 'required|string',
+            'questions.*.pilihan_c' => 'nullable|string',
+            'questions.*.pilihan_d' => 'nullable|string',
+            'questions.*.jawaban_benar' => 'required|in:a,b,c,d',
+            'kelas_id' => 'required|exists:kelas,id',
+            'mata_pelajaran' => 'required|string|in:' . implode(',', self::getMataPelajaranOptions()),
+        ]);
+
+        $saved_count = 0;
+
+        foreach ($validated['questions'] as $question) {
+            Soal::create([
+                'user_id' => Auth::id(),
+                'kelas_id' => $validated['kelas_id'],
+                'difficulty_level' => 'normal',
+                'mata_pelajaran' => $validated['mata_pelajaran'],
+                'pertanyaan' => $question['pertanyaan'],
+                'pilihan_a' => $question['pilihan_a'],
+                'pilihan_b' => $question['pilihan_b'],
+                'pilihan_c' => $question['pilihan_c'] ?? '-',
+                'pilihan_d' => $question['pilihan_d'] ?? '-',
+                'jawaban_benar' => $question['jawaban_benar'],
+            ]);
+            $saved_count++;
+        }
+
+        // Hapus session review
+        $sessionKey = 'upload_file_review_' . Auth::id();
+        session()->forget($sessionKey);
+
+        return redirect('/guru/soal')->with('success', "$saved_count soal berhasil ditambahkan dari file upload!");
+    }
+
+    /**
+     * Ekstrak teks dari file PDF menggunakan pdfparser (smalot/pdfparser)
+     * atau fallback ke pdftotext command
+     */
+    private function extractTextFromPdf($file): string
+    {
+        $tempPath = $file->getRealPath();
+
+        // Method 1: Gunakan smalot/pdfparser
+        try {
+            if (class_exists('\Smalot\PdfParser\Parser')) {
+                $parser = new \Smalot\PdfParser\Parser();
+                $pdf = $parser->parseFile($tempPath);
+                $text = $pdf->getText();
+                if (!empty(trim($text))) {
+                    return $text;
+                }
+            }
+        } catch (\Exception $e) {
+            // Lanjut ke method berikutnya
+            \Log::warning('smalot/pdfparser gagal: ' . $e->getMessage());
+        }
+
+        // Method 2: pdftotext command (poppler-utils)
+        try {
+            $textPath = tempnam(sys_get_temp_dir(), 'pdf_');
+            // Convert Windows path to POSIX for Git Bash compatibility
+            $posixPath = str_replace('\\', '/', $tempPath);
+            $posixTextPath = str_replace('\\', '/', $textPath);
+            $command = sprintf('pdftotext -layout %s %s 2>&1', escapeshellarg($posixPath), escapeshellarg($posixTextPath));
+            exec($command, $output, $returnCode);
+
+            if ($returnCode === 0 && file_exists($textPath)) {
+                $text = file_get_contents($textPath);
+                @unlink($textPath);
+                if (!empty(trim($text))) {
+                    return $text;
+                }
+            }
+            @unlink($textPath);
+        } catch (\Exception $e) {
+            \Log::warning('pdftotext gagal: ' . $e->getMessage());
+        }
+
+        // Method 3: pdftotext tanpa -layout flag
+        try {
+            $textPath = tempnam(sys_get_temp_dir(), 'pdf_');
+            $posixPath = str_replace('\\', '/', $tempPath);
+            $posixTextPath = str_replace('\\', '/', $textPath);
+            $command = sprintf('pdftotext %s %s 2>&1', escapeshellarg($posixPath), escapeshellarg($posixTextPath));
+            exec($command, $output, $returnCode);
+
+            if ($returnCode === 0 && file_exists($textPath)) {
+                $text = file_get_contents($textPath);
+                @unlink($textPath);
+                if (!empty(trim($text))) {
+                    return $text;
+                }
+            }
+            @unlink($textPath);
+        } catch (\Exception $e) {
+            \Log::warning('pdftotext fallback gagal: ' . $e->getMessage());
+        }
+
+        return '';
+    }
+
+    /**
+     * Ekstrak teks dari file Word (doc/docx)
+     */
+    private function extractTextFromWord($file): string
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+        $tempPath = $file->getRealPath();
+
+        if ($extension === 'docx') {
+            // DOCX adalah ZIP yang berisi XML
+            $zip = new \ZipArchive();
+            if ($zip->open($tempPath) === true) {
+                $xmlContent = $zip->getFromName('word/document.xml');
+                $zip->close();
+
+                if ($xmlContent) {
+                    // Hapus XML tags, simpan text content
+                    $text = preg_replace('/<[^>]+>/', "\n", $xmlContent);
+                    $text = html_entity_decode($text);
+                    // Bersihkan whitespace berlebih
+                    $text = preg_replace('/\n{3,}/', "\n\n", $text);
+                    return trim($text);
+                }
+            }
+        } elseif ($extension === 'doc') {
+            // Untuk format .doc lama, coba gunakan catdoc jika tersedia
+            $textPath = tempnam(sys_get_temp_dir(), 'doc_');
+            $command = sprintf('catdoc %s 2>&1', escapeshellarg($tempPath));
+            exec($command, $output, $returnCode);
+
+            if ($returnCode === 0 && !empty($output)) {
+                @unlink($textPath);
+                return implode("\n", $output);
+            }
+            @unlink($textPath);
+
+            // Fallback: baca sebagai text biasa
+            return @file_get_contents($tempPath);
+        }
+
+        return '';
     }
 }

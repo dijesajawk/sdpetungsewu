@@ -18,6 +18,7 @@ class Soal extends Model
         'kelas_id',
         'kategori_id',
         'difficulty_level',
+        'mata_pelajaran',
         'pertanyaan',
         'pilihan_a',
         'pilihan_b',
