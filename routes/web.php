@@ -12,6 +12,24 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// TEMP PREVIEW
+Route::get('/__guru', function () {
+    \Illuminate\Support\Facades\Auth::loginUsingId(15);
+    return app(GuruController::class)->dashboard();
+});
+Route::get('/__soal', function () {
+    \Illuminate\Support\Facades\Auth::loginUsingId(15);
+    return app(GuruController::class)->listSoal(request());
+});
+Route::get('/__admin', function () {
+    \Illuminate\Support\Facades\Auth::loginUsingId(1);
+    return app(AdminController::class)->dashboard();
+});
+Route::get('/__siswa', function () {
+    \Illuminate\Support\Facades\Auth::loginUsingId(8);
+    return app(StudentController::class)->dashboard();
+});
+
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');

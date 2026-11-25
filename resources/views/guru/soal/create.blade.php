@@ -7,11 +7,11 @@
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold text-gray-800">Buat Soal Baru</h1>
         <div class="flex gap-2">
-            <a href="{{ route('guru.soal.scan.upload') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition text-sm">
-                📸 Scan Soal
+            <a href="{{ route('guru.soal.scan.upload') }}" class="btn-success btn-sm">
+                <x-icon name="camera" />  Scan Soal
             </a>
-            <a href="{{ route('guru.soal.upload.file') }}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition text-sm">
-                📄 Upload PDF/Word
+            <a href="{{ route('guru.soal.upload.file') }}" class="btn-violet btn-sm">
+                <x-icon name="file-text" />  Upload PDF/Word
             </a>
         </div>
     </div>
@@ -59,9 +59,9 @@
             <select id="difficulty_level" name="difficulty_level" required
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">-- Pilih Tingkat --</option>
-                <option value="mudah" {{ old('difficulty_level') == 'mudah' ? 'selected' : '' }}>🟢 Mudah</option>
-                <option value="normal" {{ old('difficulty_level') == 'normal' ? 'selected' : '' }}>🟡 Normal</option>
-                <option value="sulit" {{ old('difficulty_level') == 'sulit' ? 'selected' : '' }}>🔴 Sulit</option>
+                <option value="mudah" {{ old('difficulty_level') == 'mudah' ? 'selected' : '' }}> Mudah</option>
+                <option value="normal" {{ old('difficulty_level') == 'normal' ? 'selected' : '' }}> Normal</option>
+                <option value="sulit" {{ old('difficulty_level') == 'sulit' ? 'selected' : '' }}> Sulit</option>
             </select>
             @error('difficulty_level')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -141,10 +141,10 @@
 
         <!-- Buttons -->
         <div class="flex gap-4">
-            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">
+            <button type="submit" class="btn-premium btn-sm flex-1">
                 Simpan Soal
             </button>
-            <a href="{{ route('guru.soal.list') }}" class="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg text-center transition">
+            <a href="{{ route('guru.soal.list') }}" class="btn-soft btn-sm flex-1 text-center">
                 Batal
             </a>
         </div>

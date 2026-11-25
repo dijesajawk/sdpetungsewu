@@ -7,15 +7,15 @@
     <!-- Header -->
     <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">📊 Hasil Jawaban Murid</h1>
+            <h1 class="text-3xl font-bold text-gray-800"><x-icon name="bar-chart" />  Hasil Jawaban Murid</h1>
             <p class="text-gray-600 mt-1">Session: <span class="font-mono font-bold">{{ $session->session_code }}</span></p>
         </div>
         <form action="{{ route('guru.session.end', $session) }}" method="POST" class="inline">
             @csrf
             <button type="submit" 
-                class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition"
+                class="btn-danger btn-sm"
                 onclick="return confirm('Yakin ingin menutup session ini?')">
-                ✕ Tutup Session
+                <x-icon name="x" />  Tutup Session
             </button>
         </form>
     </div>
@@ -61,7 +61,7 @@
             <div class="relative flex flex-col md:flex-row md:items-end md:justify-between gap-2 mb-8">
                 <div>
                     <p class="text-cyan-300 text-xs font-bold uppercase tracking-[.25em]">Live scoreboard</p>
-                    <h2 class="text-2xl md:text-3xl font-bold mt-1">🏆 Peringkat Murid</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold mt-1"><x-icon name="trophy" />  Peringkat Murid</h2>
                 </div>
                 <p class="text-slate-400 text-sm">5 peserta terbaik dari {{ $peringkat->count() }} peserta</p>
             </div>
@@ -69,7 +69,7 @@
             <div class="relative grid grid-cols-3 items-end gap-2 md:gap-6 max-w-3xl mx-auto mb-10">
                 @foreach ($podium as $hasil)
                     <div class="rank-rise text-center {{ $loop->iteration === 1 ? 'order-2' : ($loop->iteration === 2 ? 'order-1 podium-second' : 'order-3 podium-third') }}" style="animation-delay: {{ $loop->index * 120 }}ms">
-                        <div class="text-3xl mb-2">{{ $loop->iteration === 1 ? '🥇' : ($loop->iteration === 2 ? '🥈' : '🥉') }}</div>
+                        <div class="text-3xl mb-2">{{ $loop->iteration === 1 ? '' : ($loop->iteration === 2 ? '' : '') }}</div>
                         <p class="font-bold truncate" title="{{ $hasil['nama'] }}">{{ $hasil['nama'] }}</p>
                         <p class="text-cyan-300 text-sm font-semibold mb-2">{{ $hasil['benar'] }} benar</p>
                         <div class="podium-step rounded-t-xl flex items-center justify-center {{ $loop->iteration === 1 ? 'bg-amber-400 text-amber-950' : ($loop->iteration === 2 ? 'bg-slate-300 text-slate-800' : 'bg-orange-500 text-orange-950') }}">
@@ -99,7 +99,7 @@
 
     <!-- Daftar Soal dan Jawaban Murid -->
     <div class="bg-white rounded-lg shadow-lg p-6">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">📋 Soal dan Jawaban Murid</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6"><x-icon name="clipboard-list" />  Soal dan Jawaban Murid</h2>
         
         @if ($soalList->count() > 0)
             <div class="space-y-6">
@@ -124,9 +124,9 @@
                                         @elseif($item->soal->difficulty_level === 'normal') bg-yellow-100 text-yellow-800
                                         @else bg-red-100 text-red-800
                                         @endif">
-                                        @if($item->soal->difficulty_level === 'mudah') 🟢 Mudah
-                                        @elseif($item->soal->difficulty_level === 'normal') 🟡 Normal
-                                        @else 🔴 Sulit
+                                        @if($item->soal->difficulty_level === 'mudah') <x-icon name="dot" class="text-emerald-400" />  Mudah
+                                        @elseif($item->soal->difficulty_level === 'normal') <x-icon name="dot" class="text-amber-400" />  Normal
+                                        @else <x-icon name="dot" class="text-rose-400" />  Sulit
                                         @endif
                                     </span>
                                 </div>
@@ -140,7 +140,7 @@
                                 <span class="flex-1 {{ $item->soal->jawaban_benar === 'a' ? 'text-green-600 font-bold' : '' }}">
                                     {{ $item->soal->pilihan_a }}
                                     @if ($item->soal->jawaban_benar === 'a')
-                                        <span class="text-green-600 ml-2">✓ Jawaban Benar</span>
+                                        <span class="text-green-600 ml-2"><x-icon name="check" />  Jawaban Benar</span>
                                     @endif
                                 </span>
                             </div>
@@ -149,7 +149,7 @@
                                 <span class="flex-1 {{ $item->soal->jawaban_benar === 'b' ? 'text-green-600 font-bold' : '' }}">
                                     {{ $item->soal->pilihan_b }}
                                     @if ($item->soal->jawaban_benar === 'b')
-                                        <span class="text-green-600 ml-2">✓ Jawaban Benar</span>
+                                        <span class="text-green-600 ml-2"><x-icon name="check" />  Jawaban Benar</span>
                                     @endif
                                 </span>
                             </div>
@@ -158,7 +158,7 @@
                                 <span class="flex-1 {{ $item->soal->jawaban_benar === 'c' ? 'text-green-600 font-bold' : '' }}">
                                     {{ $item->soal->pilihan_c }}
                                     @if ($item->soal->jawaban_benar === 'c')
-                                        <span class="text-green-600 ml-2">✓ Jawaban Benar</span>
+                                        <span class="text-green-600 ml-2"><x-icon name="check" />  Jawaban Benar</span>
                                     @endif
                                 </span>
                             </div>
@@ -167,7 +167,7 @@
                                 <span class="flex-1 {{ $item->soal->jawaban_benar === 'd' ? 'text-green-600 font-bold' : '' }}">
                                     {{ $item->soal->pilihan_d }}
                                     @if ($item->soal->jawaban_benar === 'd')
-                                        <span class="text-green-600 ml-2">✓ Jawaban Benar</span>
+                                        <span class="text-green-600 ml-2"><x-icon name="check" />  Jawaban Benar</span>
                                     @endif
                                 </span>
                             </div>
@@ -208,11 +208,11 @@
                                                     <td class="px-3 py-2 text-center">
                                                         @if ($j->is_correct)
                                                             <span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold">
-                                                                ✓ Benar
+                                                                <x-icon name="check" />  Benar
                                                             </span>
                                                         @else
                                                             <span class="inline-block bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-bold">
-                                                                ✕ Salah
+                                                                <x-icon name="x" />  Salah
                                                             </span>
                                                         @endif
                                                     </td>
@@ -239,7 +239,7 @@
 
     <!-- Action Buttons -->
     <div class="flex flex-col gap-3">
-        <a href="{{ route('guru.dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition text-center font-semibold">
+        <a href="{{ route('guru.dashboard') }}" class="btn-premium text-center">
             ← Kembali ke Dashboard
         </a>
     </div>

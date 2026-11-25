@@ -1,20 +1,21 @@
 @extends('layouts.app')
 
 @section('title', 'Login')
+@section('body-class', 'auth-soft text-slate-100')
 
 @section('content')
 <div class="min-h-[calc(100vh-140px)] flex items-center justify-center py-6">
-    <div class="w-full max-w-5xl grid lg:grid-cols-2 rounded-[28px] overflow-hidden shadow-[0_40px_100px_-30px_rgba(23,23,60,.45)] anim-zoom-in">
+    <div class="w-full max-w-5xl grid lg:grid-cols-2 rounded-[28px] overflow-hidden border border-white/10 shadow-[0_40px_100px_-30px_rgba(9,13,32,.75)] anim-zoom-in">
 
         <!-- ===== LEFT : Brand panel ===== -->
-        <div class="relative hidden lg:flex flex-col justify-between p-10 overflow-hidden bg-[#0b1230] text-white">
+        <div class="relative hidden lg:flex flex-col justify-between p-10 overflow-hidden bg-gradient-to-br from-[#2c3a72] to-[#222c5c] text-white">
             <div class="aurora-blob violet !opacity-60" style="position:absolute"></div>
             <div class="aurora-blob cyan !opacity-50" style="position:absolute; animation-duration:24s"></div>
             <canvas data-particles data-particles-count="26" style="position:absolute;inset:0;"></canvas>
 
             <div class="relative z-10">
                 <a href="{{ url('/') }}" class="flex items-center gap-3 group w-fit">
-                    <span class="logo-badge"><img src="{{ asset('images/logo-sekolah.jpg') }}" alt=""></span>
+                    <span class="logo-badge"><img src="{{ asset('images/logo-sekolah.png') }}" alt=""></span>
                     <span>
                         <span class="font-display font-bold block">Web Edukasi</span>
                         <span class="text-[11px] tracking-[.18em] uppercase text-cyan-300/80 font-semibold">SDN 2 Petungsewu</span>
@@ -24,14 +25,14 @@
 
             <div class="relative z-10">
                 <h2 class="font-display font-extrabold text-4xl leading-tight reveal-left">
-                    Selamat Datang<br><span class="gradient-text">Kembali! 👋</span>
+                    Selamat Datang<br><span class="gradient-text">Kembali! <x-icon name="user" /> </span>
                 </h2>
-                <p class="text-white/55 mt-4 leading-relaxed max-w-sm">Masuk untuk mengelola soal, menjalankan quiz interaktif, dan memantau perkembangan belajar.</p>
+                <p class="text-white/60 mt-4 leading-relaxed max-w-sm">Masuk untuk mengelola soal, menjalankan quiz interaktif, dan memantau perkembangan belajar.</p>
 
                 <div class="mt-8 space-y-3.5 max-w-sm">
-                    @foreach([['🚀','Quiz real-time di kelas'],['📊','Rekap nilai otomatis'],['🛡️','Aman & terverifikasi']] as [$ic,$tx])
+                    @foreach([['rocket','Quiz real-time di kelas'],['bar-chart','Rekap nilai otomatis'],['shield-check','Aman & terverifikasi']] as [$ic,$tx])
                         <div class="flex items-center gap-3 glass-dark rounded-xl px-4 py-3 reveal-left delay-2 border border-white/10">
-                            <span class="w-9 h-9 grid place-items-center rounded-lg bg-white/10 text-lg">{{ $ic }}</span>
+                            <span class="w-9 h-9 grid place-items-center rounded-lg bg-white/10 text-cyan-200"><x-icon name="{{ $ic }}" /></span>
                             <span class="text-sm font-semibold text-white/80">{{ $tx }}</span>
                         </div>
                     @endforeach
@@ -42,9 +43,9 @@
         </div>
 
         <!-- ===== RIGHT : Form ===== -->
-        <div class="bg-white p-8 sm:p-12 flex flex-col justify-center">
+        <div class="auth-form-panel bg-white p-8 sm:p-12 flex flex-col justify-center">
             <div class="lg:hidden flex items-center gap-3 mb-8">
-                <img src="{{ asset('images/logo-sekolah.jpg') }}" alt="" class="h-11 w-11 rounded-xl object-cover ring-2 ring-indigo-100">
+                <img src="{{ asset('images/logo-sekolah.png') }}" alt="" class="h-11 w-auto object-contain drop-shadow-sm">
                 <span class="font-display font-bold text-slate-900 text-lg">Web Edukasi</span>
             </div>
 
@@ -55,9 +56,9 @@
                 @csrf
 
                 <div>
-                    <label for="email" class="block text-sm font-bold text-slate-700 mb-2">📧 Email</label>
+                    <label for="email" class="block text-sm font-bold text-slate-700 mb-2"><x-icon name="mail" />  Email</label>
                     <div class="input-icon-wrap">
-                        <span class="input-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m2 7 10 6 10-6"/></svg></span>
+                        <span class="input-icon"><x-icon name="mail" class="w-[17px] h-[17px]" /></span>
                         <input type="email" id="email" name="email" value="{{ old('email') }}" required placeholder="nama@email.com"
                             class="input-premium" autocomplete="email">
                     </div>
@@ -65,9 +66,9 @@
                 </div>
 
                 <div>
-                    <label for="password" class="block text-sm font-bold text-slate-700 mb-2">🔒 Password</label>
+                    <label for="password" class="block text-sm font-bold text-slate-700 mb-2"><x-icon name="lock" />  Password</label>
                     <div class="input-icon-wrap">
-                        <span class="input-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                        <span class="input-icon"><x-icon name="lock" class="w-[17px] h-[17px]" /></span>
                         <input type="password" id="password" name="password" required placeholder="••••••••"
                             class="input-premium pr-16" autocomplete="current-password">
                         <button type="button" onclick="togglePw('password', this)" title="Lihat password"

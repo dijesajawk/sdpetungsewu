@@ -23,12 +23,12 @@
                     <h1 class="text-3xl md:text-4xl font-bold mb-2">Session Quiz Dibuka</h1>
                     <p class="text-slate-300">Peserta bisa masuk dan menjawab sekarang.</p>
                 </div>
-                <div class="quiz-hero-float text-6xl md:text-7xl">🚀</div>
+                <div class="quiz-hero-float text-6xl md:text-7xl"><x-icon name="rocket" /> </div>
             </div>
         </div>
     @else
         <div class="bg-slate-800 text-white rounded-2xl p-8 shadow-xl">
-            <h1 class="text-3xl font-bold mb-2">✕ Session Quiz Ditutup</h1>
+            <h1 class="text-3xl font-bold mb-2"><x-icon name="x" />  Session Quiz Ditutup</h1>
             <p class="text-slate-300">Sesi telah ditutup pada {{ optional($session->selesai_at)->format('d M Y H:i:s') }}</p>
         </div>
     @endif
@@ -36,7 +36,7 @@
     <div class="bg-white rounded-lg shadow-lg p-8 space-y-6">
         <!-- Info Quiz -->
         <div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">📋 Informasi Quiz</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4"><x-icon name="clipboard-list" />  Informasi Quiz</h2>
             <div class="space-y-3 text-gray-700">
                 <p>
                     <span class="font-semibold">Total Soal:</span> 
@@ -50,10 +50,10 @@
                         @elseif($session->difficulty_type === 'sulit') bg-red-100 text-red-800
                         @else bg-purple-100 text-purple-800
                         @endif">
-                        @if($session->difficulty_type === 'mudah') 🟢 Mudah
-                        @elseif($session->difficulty_type === 'normal') 🟡 Normal
-                        @elseif($session->difficulty_type === 'sulit') 🔴 Sulit
-                        @else 🎲 Campuran (Random)
+                        @if($session->difficulty_type === 'mudah') <x-icon name="dot" class="text-emerald-400" />  Mudah
+                        @elseif($session->difficulty_type === 'normal') <x-icon name="dot" class="text-amber-400" />  Normal
+                        @elseif($session->difficulty_type === 'sulit') <x-icon name="dot" class="text-rose-400" />  Sulit
+                        @else <x-icon name="shuffle" />  Campuran (Random)
                         @endif
                     </span>
                 </p>
@@ -62,7 +62,7 @@
 
         <!-- Kode Akses -->
         <div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">🔑 Kode Akses Murid</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4"><x-icon name="key" />  Kode Akses Murid</h2>
             <div class="quiz-code-shine bg-gradient-to-br from-cyan-50 to-blue-100 rounded-2xl p-6 border-2 border-cyan-200 text-center shadow-inner">
                 <p class="text-gray-600 text-sm mb-2">Bagikan kode ini ke murid Anda:</p>
                 <p class="text-5xl font-bold text-blue-600 tracking-widest select-all">
@@ -73,7 +73,7 @@
 
         <!-- Link Akses -->
         <div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">🔗 Link Akses</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4"><x-icon name="link" />  Link Akses</h2>
             <div class="bg-gray-100 rounded-lg p-6 space-y-4">
                 <p class="text-gray-600 text-sm">Atau bagikan link ini langsung:</p>
                 <input type="text" 
@@ -81,15 +81,15 @@
                     value="{{ route('quiz.name-input', ['sessionCode' => $session->session_code]) }}" 
                     class="w-full px-4 py-2 border rounded-lg bg-white text-gray-700 font-mono text-sm"
                     readonly>
-                <button onclick="copyToClipboard(event)" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition font-semibold">
-                    📋 Salin Link
+                <button onclick="copyToClipboard(event)" class="btn-premium btn-sm w-full">
+                    <x-icon name="clipboard-list" />  Salin Link
                 </button>
             </div>
         </div>
 
         <!-- Instruksi -->
         <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded">
-            <h3 class="font-bold text-blue-900 mb-3 text-lg">📋 Instruksi untuk Murid:</h3>
+            <h3 class="font-bold text-blue-900 mb-3 text-lg"><x-icon name="clipboard-list" />  Instruksi untuk Murid:</h3>
             <ol class="list-decimal list-inside space-y-2 text-blue-800">
                 <li>Buka link akses atau masukkan kode <strong>{{ $session->session_code }}</strong></li>
                 <li>Masukkan nama lengkap</li>
@@ -105,7 +105,7 @@
                 <p class="text-green-800">
                     <span class="font-bold">Status:</span> 
                     <span class="inline-block bg-green-200 text-green-800 px-3 py-1 rounded-full font-semibold">
-                        🟢 AKTIF
+                        <x-icon name="dot" class="text-emerald-400" />  AKTIF
                     </span>
                 </p>
                 <p class="text-green-700 text-sm mt-2">Quiz dimulai: {{ $session->mulai_at->format('d M Y H:i:s') }}</p>
@@ -115,7 +115,7 @@
                 <p class="text-gray-800">
                     <span class="font-bold">Status:</span> 
                     <span class="inline-block bg-gray-200 text-gray-800 px-3 py-1 rounded-full font-semibold">
-                        ✖ SELESAI
+                         SELESAI
                     </span>
                 </p>
                 <p class="text-gray-700 text-sm mt-2">Selesai: {{ optional($session->selesai_at)->format('d M Y H:i:s') }}</p>
@@ -125,19 +125,19 @@
         <!-- Action Buttons -->
         <div class="flex flex-col gap-3 pt-6 border-t">
             <a href="{{ route('guru.session.info', $session) }}" 
-                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition text-center font-semibold">
-                📊 Lihat Hasil Jawaban Murid (Real-time)
+                class="btn-premium text-center">
+                <x-icon name="bar-chart" />  Lihat Hasil Jawaban Murid (Real-time)
             </a>
             <form action="{{ route('guru.session.end', $session) }}" method="POST" class="inline">
                 @csrf
                 <button type="submit" 
-                    class="w-full bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition font-semibold"
+                    class="btn-danger w-full"
                     onclick="return confirm('Yakin ingin menutup session quiz ini?')">
-                    ✕ Tutup Session
+                    <x-icon name="x" />  Tutup Session
                 </button>
             </form>
             <a href="{{ route('guru.dashboard') }}" 
-                class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition text-center font-semibold">
+                class="btn-soft text-center">
                 ← Kembali ke Dashboard
             </a>
         </div>
@@ -153,7 +153,7 @@ function copyToClipboard(e) {
     // Show feedback
     const button = e.target;
     const originalText = button.textContent;
-    button.textContent = '✓ Disalin!';
+    button.textContent = ' Disalin!';
     setTimeout(() => {
         button.textContent = originalText;
     }, 2000);

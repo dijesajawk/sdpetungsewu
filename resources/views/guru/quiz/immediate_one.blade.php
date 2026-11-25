@@ -8,7 +8,7 @@
         <div>
             <h1 class="text-2xl font-bold">Soal {{ $index + 1 }} / {{ $total }}</h1>
         </div>
-        <a href="#" id="ubahFilterLink" class="text-blue-600 hover:underline">← Ubah Filter</a>
+        <a href="#" id="ubahFilterLink" class="btn-soft btn-xs">← Ubah Filter</a>
     </div>
 
     @if(session('success'))
@@ -49,10 +49,10 @@
 
         <div class="flex justify-between mt-6 items-center">
             <div class="flex gap-3">
-                <button type="button" id="exitButton" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Keluar</button>
-                <button type="button" id="reshuffleBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded">Acak Ulang</button>
+                <button type="button" id="exitButton" class="btn-soft btn-sm">Keluar</button>
+                <button type="button" id="reshuffleBtn" class="btn-warn btn-sm">Acak Ulang</button>
             </div>
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">Jawab</button>
+            <button type="submit" class="btn-premium btn-sm">Jawab</button>
         </div>
     </form>
 </div>
@@ -63,8 +63,8 @@
         <h3 class="text-lg font-semibold mb-4">Konfirmasi</h3>
         <p class="text-gray-700 mb-6">Anda yakin ingin keluar dari Soal Langsung? Pilihan Anda tidak akan tersimpan.</p>
         <div class="flex justify-end gap-3">
-            <button id="cancelExit" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded">Batal</button>
-            <button id="confirmExit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Keluar</button>
+            <button id="cancelExit" class="btn-soft btn-sm">Batal</button>
+            <button id="confirmExit" class="btn-danger btn-sm">Keluar</button>
         </div>
     </div>
 </div>

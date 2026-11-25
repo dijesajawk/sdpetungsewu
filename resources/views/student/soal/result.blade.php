@@ -21,7 +21,7 @@
 
     <!-- ===== HERO SCORE ===== -->
     <div class="result-hero relative overflow-hidden rounded-[30px] p-8 md:p-12 text-white anim-fade-up shadow-[0_34px_90px_-26px_rgba(43,33,96,.6)]">
-        <span class="absolute -right-8 -top-8 text-[140px] opacity-10 select-none anim-float">🏆</span>
+        <span class="absolute -right-8 -top-8 text-[140px] opacity-10 select-none anim-float"><x-icon name="trophy" /> </span>
         <canvas data-particles data-particles-count="20" style="position:absolute;inset:0;"></canvas>
 
         <div class="relative z-10 grid md:grid-cols-[auto_1fr] gap-9 items-center max-w-3xl mx-auto">
@@ -51,12 +51,12 @@
             </div>
 
             <div class="text-center md:text-left">
-                <span class="chip-pill chip-glass reveal">📊 Rekap Hasil Belajar</span>
+                <span class="chip-pill chip-glass reveal"><x-icon name="bar-chart" />  Rekap Hasil Belajar</span>
                 <h1 class="font-display font-extrabold text-3xl md:text-4xl mt-4 leading-tight">
-                    @if($skor >= 80) Luar Biasa! 🌟
-                    @elseif($skor >= 60) Bagus Sekali! 👍
-                    @elseif($skor >= 40) Terus Semangat! 💪
-                    @else Jangan Menyerah! 🚀
+                    @if($skor >= 80) Luar Biasa! <x-icon name="star" /> 
+                    @elseif($skor >= 60) Bagus Sekali! <x-icon name="thumbs-up" /> 
+                    @elseif($skor >= 40) Terus Semangat! <x-icon name="activity" /> 
+                    @else Jangan Menyerah! <x-icon name="rocket" /> 
                     @endif
                 </h1>
                 <p class="text-white/60 mt-2.5">Kamu sudah menyelesaikan <b class="text-white">{{ $totalSoal }} soal</b> — setiap usaha adalah kemajuan!</p>
@@ -64,15 +64,15 @@
                 <div class="mt-6 flex flex-wrap gap-6 justify-center md:justify-start">
                     <div class="glass-dark rounded-2xl px-5 py-3.5 border border-white/10 text-center">
                         <p class="font-display font-extrabold text-2xl text-emerald-400">{{ $benarJawab }}</p>
-                        <p class="text-[11px] font-bold tracking-widest uppercase opacity-60">Benar ✅</p>
+                        <p class="text-[11px] font-bold tracking-widest uppercase opacity-60">Benar <x-icon name="check-circle" /> </p>
                     </div>
                     <div class="glass-dark rounded-2xl px-5 py-3.5 border border-white/10 text-center">
                         <p class="font-display font-extrabold text-2xl text-rose-400">{{ $totalSoal - $benarJawab }}</p>
-                        <p class="text-[11px] font-bold tracking-widest uppercase opacity-60">Salah ❌</p>
+                        <p class="text-[11px] font-bold tracking-widest uppercase opacity-60">Salah <x-icon name="x-circle" /> </p>
                     </div>
                     <div class="glass-dark rounded-2xl px-5 py-3.5 border border-white/10 text-center">
                         <p class="font-display font-extrabold text-2xl gradient-text-gold">{{ $totalSoal }}</p>
-                        <p class="text-[11px] font-bold tracking-widest uppercase opacity-60">Total 📚</p>
+                        <p class="text-[11px] font-bold tracking-widest uppercase opacity-60">Total <x-icon name="book-open" /> </p>
                     </div>
                 </div>
             </div>
@@ -84,7 +84,7 @@
     <div class="premium-card p-5 md:p-6 reveal delay-1">
         <form method="GET" action="{{ route('student.result') }}" class="flex flex-wrap gap-4 items-end">
             <div class="flex-1 min-w-[200px]">
-                <label for="kelas_id" class="block text-xs font-extrabold tracking-wider uppercase text-slate-400 mb-2">🏫 Kelas</label>
+                <label for="kelas_id" class="block text-xs font-extrabold tracking-wider uppercase text-slate-400 mb-2"><x-icon name="school" />  Kelas</label>
                 <select name="kelas_id" id="kelas_id" class="input-premium">
                     <option value="">Semua Kelas</option>
                     @foreach($kelas as $k)
@@ -93,7 +93,7 @@
                 </select>
             </div>
             <div class="flex-1 min-w-[200px]">
-                <label for="kategori_id" class="block text-xs font-extrabold tracking-wider uppercase text-slate-400 mb-2">📚 Kategori</label>
+                <label for="kategori_id" class="block text-xs font-extrabold tracking-wider uppercase text-slate-400 mb-2"><x-icon name="book-open" />  Kategori</label>
                 <select name="kategori_id" id="kategori_id" class="input-premium">
                     <option value="">Semua Kategori</option>
                     @foreach($kategori as $k)
@@ -101,14 +101,14 @@
                     @endforeach
                 </select>
             </div>
-            <button type="submit" class="btn-premium !py-3">🔍 Filter</button>
+            <button type="submit" class="btn-premium !py-3"><x-icon name="search" />  Filter</button>
         </form>
     </div>
 
     <!-- ===== RIWAYAT JAWABAN ===== -->
     <section>
         <h2 class="font-display font-bold text-xl text-slate-800 mb-5 flex items-center gap-3 reveal">
-            <span class="anim-wiggle inline-block text-2xl">📝</span> Riwayat Jawabanmu
+            <span class="anim-wiggle inline-block text-2xl"><x-icon name="file-text" /> </span> Riwayat Jawabanmu
         </h2>
 
         <div class="space-y-4" data-stagger>
@@ -116,7 +116,7 @@
             <div class="answer-row premium-card !rounded-[18px] p-5 border-r-8 {{ $j->is_correct ? '!border-emerald-400' : '!border-rose-300' }}">
                 <div class="flex items-start justify-between gap-4">
                     <p class="font-bold text-slate-700 leading-snug">{{ Str::limit($j->soal->pertanyaan, 110) }}</p>
-                    <span class="text-xl shrink-0">{{ $j->is_correct ? '✅' : '❌' }}</span>
+                    <span class="text-xl shrink-0">{{ $j->is_correct ? '' : '' }}</span>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2.5 mt-3.5 text-sm">
@@ -130,14 +130,14 @@
                     @endif
                 </div>
 
-                <p class="text-xs text-slate-400 font-semibold mt-3">📌 {{ $j->soal->kelas->nama_kelas }} • {{ $j->soal->kategori->nama_kategori }}</p>
+                <p class="text-xs text-slate-400 font-semibold mt-3"><x-icon name="bookmark" />  {{ $j->soal->kelas->nama_kelas }} • {{ $j->soal->kategori->nama_kategori }}</p>
             </div>
             @endforeach
         </div>
     </section>
     @else
     <div class="empty-state reveal-scale">
-        <span class="empty-emoji">🤔</span>
+        <span class="empty-emoji"><x-icon name="help-circle" /> </span>
         <h3 class="font-display font-bold text-xl text-slate-800 mt-3">Belum Ada Jawaban</h3>
         <p class="text-slate-400 mt-1">Mulai kerjakan soal untuk melihat hasilnya ya!</p>
     </div>
@@ -146,7 +146,7 @@
     <!-- ===== ACTIONS ===== -->
     <div class="flex flex-wrap justify-center gap-4 pt-2">
         <a href="{{ route('student.soal.list') }}" class="btn-premium">← Kerjakan Soal Lagi</a>
-        <a href="{{ route('student.dashboard') }}" class="btn-outline-brand !text-sm !py-3.5">🏠 Ke Dashboard</a>
+        <a href="{{ route('student.dashboard') }}" class="btn-outline-brand !text-sm !py-3.5"><x-icon name="home" />  Ke Dashboard</a>
     </div>
 </div>
 

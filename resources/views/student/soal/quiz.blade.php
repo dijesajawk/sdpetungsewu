@@ -37,13 +37,13 @@
 
     @if($jawabanSebelumnya)
     <div class="rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 px-6 py-4 flex items-center gap-3 anim-fade-down">
-        <span class="text-2xl anim-wiggle inline-block">📋</span>
+        <span class="text-2xl anim-wiggle inline-block"><x-icon name="clipboard-list" /> </span>
         <p class="text-sm text-amber-800 font-semibold">
             Jawaban sebelumnya: opsi <b>{{ strtoupper($jawabanSebelumnya->jawaban_dipilih) }}</b>
             @if($jawabanSebelumnya->is_correct)
-                <span class="text-emerald-600">— Benar! ✅</span>
+                <span class="text-emerald-600">— Benar! <x-icon name="check-circle" /> </span>
             @else
-                <span class="text-rose-500">— Salah ❌</span>
+                <span class="text-rose-500">— Salah <x-icon name="x-circle" /> </span>
             @endif
         </p>
     </div>
@@ -54,7 +54,7 @@
         <!-- ===== SIDE INFO ===== -->
         <aside class="premium-card p-6 lg:sticky lg:top-28 reveal-left">
             <div class="flex items-center gap-3 pb-5 border-b border-dashed border-slate-200">
-                <img src="{{ asset('images/logo-sekolah.jpg') }}" alt="" class="h-12 w-12 rounded-xl object-cover ring-2 ring-indigo-100">
+                <img src="{{ asset('images/logo-sekolah.png') }}" alt="" class="h-12 w-auto object-contain">
                 <div>
                     <p class="font-bold text-slate-800 leading-tight">{{ $soal->kelas->nama_kelas }}</p>
                     <p class="text-xs text-slate-400 font-semibold mt-0.5">{{ $soal->kategori->nama_kategori }}</p>
@@ -81,7 +81,7 @@
 
         <!-- ===== QUESTION CARD ===== -->
         <div class="premium-card p-7 md:p-10 reveal">
-            <p class="text-sm font-extrabold gradient-text tracking-wide mb-3">✨ Pertanyaan untukmu:</p>
+            <p class="text-sm font-extrabold gradient-text tracking-wide mb-3"><x-icon name="sparkles" />  Pertanyaan untukmu:</p>
             <h1 class="font-display font-extrabold text-2xl md:text-[32px] leading-snug text-slate-900">{{ $soal->pertanyaan }}</h1>
 
             <form id="quizForm" method="POST" action="{{ route('student.soal.submit', $soal->id) }}" class="mt-9">
@@ -93,14 +93,14 @@
                     <button type="button" class="option-row" data-answer="{{ $letter }}" onclick="selectOption('{{ $letter }}')">
                         <span class="option-letter">{{ strtoupper($letter) }}</span>
                         <span>{{ $text }}</span>
-                        <span class="ml-auto check-mark hidden text-emerald-500 text-xl font-black">✓</span>
+                        <span class="ml-auto check-mark hidden text-emerald-500 text-xl font-black"><x-icon name="check" /> </span>
                     </button>
                     @endforeach
                 </div>
 
                 <div class="mt-9 flex justify-end">
                     <button type="submit" class="btn-premium !py-3.5 !px-10 text-base" id="submitBtn" disabled>
-                        ✓ Jawab Soal
+                        <x-icon name="check" />  Jawab Soal
                     </button>
                 </div>
             </form>
@@ -112,12 +112,12 @@
 <div id="resultModal">
     <div class="modal-card">
         <div id="confettiAnchor"></div>
-        <span class="modal-emoji" id="resultEmoji">🤔</span>
+        <span class="modal-emoji" id="resultEmoji"><x-icon name="help-circle" /> </span>
         <h2 class="font-display font-extrabold text-2xl mt-4" id="resultMessage">Mengirim jawaban...</h2>
         <div class="text-slate-500 mt-3 leading-relaxed text-sm" id="resultDetail"></div>
         <div class="flex flex-wrap justify-center gap-3 mt-8">
             <a href="{{ route('student.soal.list') }}" class="btn-premium btn-gold !text-[#422006] !py-3 !px-7 text-sm">Soal Berikutnya →</a>
-            <a href="{{ route('student.result') }}" class="btn-outline-brand !py-3 !px-7 text-sm">📊 Lihat Hasil</a>
+            <a href="{{ route('student.result') }}" class="btn-outline-brand !py-3 !px-7 text-sm"><x-icon name="bar-chart" />  Lihat Hasil</a>
         </div>
     </div>
 </div>
@@ -168,31 +168,31 @@ document.getElementById('quizForm').addEventListener('submit', function (e) {
         });
 
         if (data.is_correct) {
-            emoji.textContent = '🎉';
+            emoji.textContent = '';
             message.textContent = data.message;
             message.className = 'font-display font-extrabold text-2xl mt-4';
             message.style.color = '#059669';
-            detail.innerHTML = `<p><b>Jawaban Benar!</b> 🌟 Kamu memilih opsi <b>${selectedAnswer.toUpperCase()}</b>. Hebat!</p>`;
+            detail.innerHTML = `<p><b>Jawaban Benar!</b>  Kamu memilih opsi <b>${selectedAnswer.toUpperCase()}</b>. Hebat!</p>`;
             premiumConfetti(window.innerWidth / 2, window.innerHeight / 2.6, 110);
         } else {
-            emoji.textContent = '💪';
+            emoji.textContent = '';
             message.textContent = data.message;
             message.className = 'font-display font-extrabold text-2xl mt-4';
             message.style.color = '#f43f5e';
             detail.innerHTML = `
                 <p>Kamu memilih opsi <b>${selectedAnswer.toUpperCase()}</b></p>
-                <p class="mt-2">Jawaban benar adalah opsi <b style="color:#059669">${data.jawaban_benar.toUpperCase()}</b> ✅</p>
-                <p class="mt-3 text-xs text-slate-400">Jangan khawatir, coba lagi di soal berikutnya! 📚</p>`;
+                <p class="mt-2">Jawaban benar adalah opsi <b style="color:#059669">${data.jawaban_benar.toUpperCase()}</b> </p>
+                <p class="mt-3 text-xs text-slate-400">Jangan khawatir, coba lagi di soal berikutnya! </p>`;
         }
 
         document.getElementById('resultModal').classList.add('show');
-        submitBtn.innerHTML = '✓ Jawab Soal';
+        submitBtn.innerHTML = ' Jawab Soal';
         submitBtn.disabled = false;
     })
     .catch(err => {
         console.error('Error:', err);
         alert('Terjadi kesalahan saat mengirim jawaban');
-        submitBtn.innerHTML = '✓ Jawab Soal';
+        submitBtn.innerHTML = ' Jawab Soal';
         submitBtn.disabled = false;
     });
 });

@@ -50,9 +50,9 @@
             <select id="difficulty_level" name="difficulty_level" required
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">-- Pilih Tingkat --</option>
-                <option value="mudah" {{ $soal->difficulty_level == 'mudah' ? 'selected' : '' }}>🟢 Mudah</option>
-                <option value="normal" {{ $soal->difficulty_level == 'normal' ? 'selected' : '' }}>🟡 Normal</option>
-                <option value="sulit" {{ $soal->difficulty_level == 'sulit' ? 'selected' : '' }}>🔴 Sulit</option>
+                <option value="mudah" {{ $soal->difficulty_level == 'mudah' ? 'selected' : '' }}> Mudah</option>
+                <option value="normal" {{ $soal->difficulty_level == 'normal' ? 'selected' : '' }}> Normal</option>
+                <option value="sulit" {{ $soal->difficulty_level == 'sulit' ? 'selected' : '' }}> Sulit</option>
             </select>
             @error('difficulty_level')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -132,10 +132,10 @@
 
         <!-- Buttons -->
         <div class="flex gap-4">
-            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">
+            <button type="submit" class="btn-premium btn-sm flex-1">
                 Perbarui Soal
             </button>
-            <a href="{{ route('guru.soal.list') }}" class="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg text-center transition">
+            <a href="{{ route('guru.soal.list') }}" class="btn-soft btn-sm flex-1 text-center">
                 Batal
             </a>
         </div>

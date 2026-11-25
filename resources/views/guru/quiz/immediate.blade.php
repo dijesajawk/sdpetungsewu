@@ -9,7 +9,7 @@
             <h1 class="text-2xl font-bold">Soal Langsung</h1>
             <p class="text-sm text-gray-600">Tipe: {{ ucfirst($difficulty_type) }}</p>
         </div>
-        <a href="{{ route('guru.quiz.start') }}" class="text-blue-600 hover:underline">← Kembali</a>
+        <a href="{{ route('guru.quiz.start') }}" class="btn-soft btn-xs">← Kembali</a>
     </div>
 
     <form action="#" method="POST">
@@ -33,7 +33,7 @@
         @endforeach
 
         <div class="flex justify-end">
-            <a href="{{ route('guru.dashboard') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Selesai</a>
+            <a href="{{ route('guru.dashboard') }}" class="btn-soft btn-sm">Selesai</a>
         </div>
     </form>
 </div>

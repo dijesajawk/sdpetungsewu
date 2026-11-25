@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto">
-    <h1 class="text-3xl font-bold mb-2 text-gray-800">📋 Review Soal Hasil Scan</h1>
+    <h1 class="text-3xl font-bold mb-2 text-gray-800"><x-icon name="clipboard-list" />  Review Soal Hasil Scan</h1>
     <p class="text-gray-600 mb-8">Periksa dan edit hasil OCR sebelum menyimpan ke database</p>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -47,10 +47,10 @@
                 <div id="actionButtons" class="hidden bg-white rounded-lg shadow-lg p-6 space-y-4">
                     <div id="questionSummary" class="text-center p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 font-semibold"></div>
                     <div class="flex gap-4">
-                        <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition">
-                            💾 Simpan Semua Soal
+                        <button type="submit" class="btn-success flex-1">
+                            <x-icon name="save" />  Simpan Semua Soal
                         </button>
-                        <a href="{{ route('guru.soal.scan.upload') }}" class="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg text-center transition">
+                        <a href="{{ route('guru.soal.scan.upload') }}" class="btn-soft flex-1 text-center">
                             Scan Ulang
                         </a>
                     </div>
@@ -61,19 +61,19 @@
             <div id="errorMessage" class="hidden bg-red-100 border border-red-400 rounded-lg p-6">
                 <div id="errorText" class="text-red-800 mb-4"></div>
                 <div class="flex gap-4">
-                    <a href="{{ route('guru.soal.scan.upload') }}" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-center transition">
-                        🔄 Scan Ulang
+                    <a href="{{ route('guru.soal.scan.upload') }}" class="btn-danger btn-sm flex-1 text-center">
+                        <x-icon name="refresh" />  Scan Ulang
                     </a>
-                    <a href="{{ route('guru.soal.create') }}" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-center transition">
-                        ✏️ Input Manual
+                    <a href="{{ route('guru.soal.create') }}" class="btn-premium btn-sm flex-1 text-center">
+                        <x-icon name="pencil" />  Input Manual
                     </a>
                 </div>
             </div>
 
             <!-- Debug: Raw Text -->
             <div id="debugSection" class="hidden mt-4 bg-gray-50 border border-gray-300 rounded-lg p-4">
-                <button type="button" onclick="document.getElementById('debugText').classList.toggle('hidden')" class="text-sm text-blue-600 hover:text-blue-800 font-semibold">
-                    📄 Lihat Teks Hasil Ekstrak (Debug)
+                <button type="button" onclick="document.getElementById('debugText').classList.toggle('hidden')" class="btn-soft btn-xs">
+                    <x-icon name="file-text" />  Lihat Teks Hasil Ekstrak (Debug)
                 </button>
                 <pre id="debugText" class="hidden mt-2 bg-white p-3 rounded text-xs max-h-60 overflow-y-auto border text-gray-700"></pre>
             </div>
@@ -175,7 +175,7 @@
                 document.getElementById('loadingSpinner').classList.add('hidden');
                 document.getElementById('scanForm').classList.remove('hidden');
                 document.getElementById('actionButtons').classList.remove('hidden');
-                document.getElementById('questionSummary').textContent = `✅ ${questions.length} soal berhasil dideteksi dari ${imageUrls.length} gambar`;
+                document.getElementById('questionSummary').textContent = ` ${questions.length} soal berhasil dideteksi dari ${imageUrls.length} gambar`;
             }, 500);
 
         } catch (error) {
@@ -343,7 +343,7 @@
             div.innerHTML = `
                 <div class="flex justify-between items-center mb-3">
                     <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full">Soal #${i + 1}</span>
-                    <button type="button" onclick="this.closest('.bg-white').remove()" class="text-red-500 hover:text-red-700 text-sm font-semibold">✕ Hapus</button>
+                    <button type="button" onclick="this.closest('.bg-white').remove()" class="btn-danger btn-sm"> Hapus</button>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 font-semibold mb-2">Pertanyaan</label>

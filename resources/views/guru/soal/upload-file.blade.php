@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto">
-    <h1 class="text-3xl font-bold mb-2 text-gray-800">📄 Upload File Soal</h1>
+    <h1 class="text-3xl font-bold mb-2 text-gray-800"><x-icon name="file-text" />  Upload File Soal</h1>
     <p class="text-gray-600 mb-8">Upload file PDF atau Word untuk mengekstrak soal secara otomatis</p>
 
     <form action="{{ route('guru.soal.upload.process') }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-lg p-8 space-y-6">
@@ -15,7 +15,7 @@
             id="uploadArea">
             <input type="file" id="fileInput" name="files[]" accept=".pdf,.doc,.docx" class="hidden" multiple required>
             
-            <svg class="mx-auto h-12 w-12 text-purple-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <x-icon name="upload-cloud" class="mx-auto h-12 w-12 text-purple-600 mb-4" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
             
@@ -27,7 +27,7 @@
         <div id="filePreview" class="hidden">
             <label class="block text-gray-700 font-semibold mb-2">File yang dipilih (<span id="fileCount">0</span> file):</label>
             <div id="fileNames" class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-800"></div>
-            <button type="button" id="removeFile" class="mt-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-1 px-3 rounded">
+            <button type="button" id="removeFile" class="btn-danger btn-sm mt-2">
                 Hapus & Ganti
             </button>
         </div>
@@ -68,7 +68,7 @@
 
         <!-- Tips -->
         <div class="bg-purple-100 border border-purple-400 rounded-lg p-4 space-y-3">
-            <p class="text-purple-800 text-sm font-semibold">💡 Tips untuk Hasil Terbaik:</p>
+            <p class="text-purple-800 text-sm font-semibold"><x-icon name="lightbulb" />  Tips untuk Hasil Terbaik:</p>
             <ul class="text-purple-800 text-sm ml-4 space-y-2 list-disc">
                 <li>File harus berisi teks yang bisa dibaca (bukan scan gambar)</li>
                 <li>Format soal yang didukung: <strong>1. Pertanyaan?</strong> diikuti <strong>A) Jawaban</strong></li>
@@ -80,10 +80,10 @@
         <!-- Buttons -->
         <div class="flex gap-4">
             <button type="submit" id="submitBtn" disabled
-                class="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition">
-                📤 Upload & Proses
+                class="btn-premium flex-1">
+                <x-icon name="upload" />  Upload & Proses
             </button>
-            <a href="{{ route('guru.soal.list') }}" class="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg text-center transition">
+            <a href="{{ route('guru.soal.list') }}" class="btn-soft flex-1 text-center">
                 Batal
             </a>
         </div>
@@ -146,7 +146,7 @@
             Array.from(files).forEach((file, i) => {
                 const div = document.createElement('div');
                 div.className = 'flex items-center justify-between py-1 border-b border-green-200 last:border-b-0';
-                div.innerHTML = `<span>📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</span>`;
+                div.innerHTML = `<span> ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</span>`;
                 fileNames.appendChild(div);
             });
 

@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold mb-2 text-gray-800">📸 Scan Soal Otomatis</h1>
+    <h1 class="text-3xl font-bold mb-2 text-gray-800"><x-icon name="camera" />  Scan Soal Otomatis</h1>
     <p class="text-gray-600 mb-8">Upload foto soal untuk ekstrak otomatis menggunakan OCR (Optical Character Recognition)</p>
 
     <form action="{{ route('guru.soal.scan.process', [], false) }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-lg p-8 space-y-6" id="scanForm">
@@ -15,7 +15,7 @@
             id="uploadArea">
             <input type="file" id="imageInput" name="images[]" accept="image/*" class="hidden" multiple required>
             
-            <svg class="mx-auto h-12 w-12 text-blue-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <x-icon name="scan" class="mx-auto h-12 w-12 text-blue-600 mb-4" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
             
@@ -27,7 +27,7 @@
         <div id="previewContainer" class="hidden">
             <label class="block text-gray-700 font-semibold mb-2">Preview Gambar (<span id="imageCount">0</span> foto):</label>
             <div id="previewGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
-            <button type="button" id="removeImage" class="mt-4 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+            <button type="button" id="removeImage" class="btn-danger btn-sm mt-4">
                 Hapus Semua & Ganti
             </button>
         </div>
@@ -64,7 +64,7 @@
 
         <!-- Tips -->
         <div class="bg-blue-100 border border-blue-400 rounded-lg p-4 space-y-3">
-            <p class="text-blue-800 text-sm font-semibold">💡 Tips untuk Hasil Terbaik:</p>
+            <p class="text-blue-800 text-sm font-semibold"><x-icon name="lightbulb" />  Tips untuk Hasil Terbaik:</p>
             <ul class="text-blue-800 text-sm ml-4 space-y-2 list-disc">
                 <li>Foto soal jelas, terang, dan tidak blur</li>
                 <li>Teks mudah dibaca (tidak miring atau terpotong)</li>
@@ -76,10 +76,10 @@
         <!-- Buttons -->
         <div class="flex gap-4">
             <button type="submit" id="submitBtn" disabled
-                class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition">
+                class="btn-premium flex-1">
                 Proses & Scan
             </button>
-            <a href="{{ route('guru.soal.list') }}" class="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg text-center transition">
+            <a href="{{ route('guru.soal.list') }}" class="btn-soft flex-1 text-center">
                 Batal
             </a>
         </div>

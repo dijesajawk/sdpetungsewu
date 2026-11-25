@@ -9,9 +9,9 @@
     <div class="flex flex-wrap items-center justify-between gap-4 anim-fade-up">
         <div>
             <h1 class="font-display font-extrabold text-3xl md:text-4xl text-slate-900 flex items-center gap-3.5">
-                <span class="anim-bounce inline-block text-4xl">📝</span> Daftar Soal
+                <span class="anim-bounce inline-block text-4xl"><x-icon name="file-text" /> </span> Daftar Soal
             </h1>
-            <p class="text-slate-500 mt-2">Pilih soal, jawab, dan kumpulkan bintangmu! ⭐</p>
+            <p class="text-slate-500 mt-2">Pilih soal, jawab, dan kumpulkan bintangmu! <x-icon name="star" /> </p>
         </div>
         <a href="{{ route('student.dashboard') }}" class="btn-outline-brand !text-sm">
             ← Kembali ke Dashboard
@@ -22,7 +22,7 @@
     <div class="premium-card p-5 md:p-6 !rounded-[22px] reveal delay-1">
         <form method="GET" action="{{ route('student.soal.list') }}" class="flex flex-wrap gap-4 items-end">
             <div class="flex-1 min-w-[200px]">
-                <label for="kelas_id" class="block text-xs font-extrabold tracking-wider uppercase text-slate-400 mb-2">🏫 Kelas</label>
+                <label for="kelas_id" class="block text-xs font-extrabold tracking-wider uppercase text-slate-400 mb-2"><x-icon name="school" />  Kelas</label>
                 <select name="kelas_id" id="kelas_id" class="input-premium">
                     <option value="">Semua Kelas</option>
                     @foreach($kelas as $k)
@@ -32,7 +32,7 @@
             </div>
 
             <div class="flex-1 min-w-[200px]">
-                <label for="kategori_id" class="block text-xs font-extrabold tracking-wider uppercase text-slate-400 mb-2">📚 Kategori</label>
+                <label for="kategori_id" class="block text-xs font-extrabold tracking-wider uppercase text-slate-400 mb-2"><x-icon name="book-open" />  Kategori</label>
                 <select name="kategori_id" id="kategori_id" class="input-premium">
                     <option value="">Semua Kategori</option>
                     @foreach($kategori as $k)
@@ -41,7 +41,7 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn-premium !py-3">🔍 Cari Soal</button>
+            <button type="submit" class="btn-premium !py-3"><x-icon name="search" />  Cari Soal</button>
         </form>
     </div>
 
@@ -54,9 +54,9 @@
                 <span class="chip-pill bg-gradient-to-r from-violet-500 to-indigo-500 text-white !py-1.5 shadow-[0_6px_16px_-4px_rgba(124,92,255,.5)]">Soal #{{ $loop->iteration }}</span>
                 <span class="text-2xl group-hover:scale-125 group-hover:rotate-12 transition-transform duration-500 inline-block">
                     @if($s->jawaban && $s->jawaban->where('user_id', auth()->id())->first())
-                        @if($s->jawaban->where('user_id', auth()->id())->first()->is_correct) ✅ @else ❌ @endif
+                        @if($s->jawaban->where('user_id', auth()->id())->first()->is_correct) <x-icon name="check-circle" />  @else <x-icon name="x-circle" />  @endif
                     @else
-                        ⏳
+                        <x-icon name="clock" class="text-slate-400" />
                     @endif
                 </span>
             </div>
@@ -64,13 +64,13 @@
             <p class="font-bold text-slate-700 leading-relaxed min-h-[72px]">{{ Str::limit($s->pertanyaan, 100) }}</p>
 
             <div class="flex flex-wrap gap-2 mt-4">
-                <span class="chip-pill bg-indigo-50 !text-indigo-600 !text-xs">📚 {{ $s->kelas->nama_kelas }}</span>
-                <span class="chip-pill bg-cyan-50 !text-cyan-600 !text-xs">🏷️ {{ $s->kategori->nama_kategori }}</span>
+                <span class="chip-pill bg-indigo-50 !text-indigo-600 !text-xs"><x-icon name="book-open" />  {{ $s->kelas->nama_kelas }}</span>
+                <span class="chip-pill bg-cyan-50 !text-cyan-600 !text-xs"><x-icon name="tag" />  {{ $s->kategori->nama_kategori }}</span>
             </div>
 
             <a href="{{ route('student.soal.quiz', $s->id) }}"
                class="mt-5 w-full btn-premium !py-3 text-sm group-hover:!shadow-[0_14px_34px_-8px_rgba(124,92,255,.65)]">
-                Mulai Kuis 🚀
+                Mulai Kuis <x-icon name="rocket" /> 
             </a>
         </div>
         @endforeach
@@ -82,7 +82,7 @@
     </div>
     @else
     <div class="empty-state reveal-scale play-font">
-        <span class="empty-emoji">🤔</span>
+        <span class="empty-emoji"><x-icon name="help-circle" /> </span>
         <h3 class="font-display font-bold text-xl text-slate-800 mt-3">Belum Ada Soal</h3>
         <p class="text-slate-400 mt-1">Coba ubah filter atau kembali ke dashboard ya!</p>
     </div>
